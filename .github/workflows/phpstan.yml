@@ -1,9 +1,9 @@
-name: Unit Tests
+name: Static Analysis
 
 on: [push]
 
 jobs:
-  unit-tests:
+  phpstan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -11,7 +11,8 @@ jobs:
         with:
           php_version: 8.3
 
-      - uses: php-actions/phpunit@v3
+      - uses: php-actions/phpstan@v3
         with:
           php_version: 8.3
-          configuration: phpunit.xml
+          configuration: phpstan.neon
+          memory_limit: 512m
