@@ -6,7 +6,6 @@ namespace AltDesign\AltCommerce\Actions;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
-use Illuminate\Support\Arr;
 
 
 class RemoveCouponAction
@@ -24,7 +23,6 @@ class RemoveCouponAction
         $basket = $this->basketRepository->get();
 
         $found = false;
-
 
         foreach ($basket->coupons as $key => $couponItem) {
             if ($couponItem->coupon->code() === $code) {

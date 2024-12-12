@@ -1,12 +1,10 @@
 # Alt Commerce
 
 
-![Status](https://gitlab.com/alt-design/alt-commerce/badges/main/pipeline.svg)
-![Coverage](https://gitlab.com/alt-design/alt-commerce/badges/main/coverage.svg)
-![Latest](https://gitlab.com/alt-design/alt-commerce/badges/main/release.svg)
+![Unit tests](https://github.com/alt-design/alt-commerce/actions/workflows/phpunit.yml/badge.svg)
 
 
-The future of commerce (not here just yet)...
+The future of commerce...
 
 # Testing
 
