@@ -1,7 +1,7 @@
 # Alt Commerce
 
 
-![Unit tests](https://github.com/alt-design/alt-commerce/actions/workflows/phpunit.yml/badge.svg)
+![Tests](https://github.com/alt-design/alt-commerce/actions/workflows/test.yml/badge.svg)
 
 
 The future of commerce...

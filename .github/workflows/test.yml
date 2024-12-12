@@ -1,4 +1,4 @@
-name: Unit Tests
+name: Tests
 
 on: [push]
 
@@ -16,3 +16,9 @@ jobs:
           php_version: 8.3
           configuration: phpunit.xml
           test_suffix: 'Test'
+
+      - uses: php-actions/phpstan@v3
+        with:
+          php_version: 8.3
+          configuration: phpstan.neon
+          memory_limit: 512m
