@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\Actions;
 
 
+use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;

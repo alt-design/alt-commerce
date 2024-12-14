@@ -4,11 +4,13 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
+use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\Support\PriceCollectionFactory;
@@ -237,6 +239,45 @@ class RecalculateBasketActionTest extends TestCase
 
         $this->assertEquals(12000, $this->basket->discountItems[0]->amount());
         $this->assertEquals('20% off everything', $this->basket->discountItems[0]->name());
+
+    }
+
+    public function test_removing_coupon_code(): void
+    {
+        $product = $this->productFactory->create([
+            'id' => 'product-id',
+            'price' => 12000,
+        ]);
+
+        $coupon = Mockery::mock(Coupon::class);
+        $coupon->allows()->code()->andReturn('test-code');
+
+        $this->basket->lineItems = [
+            new LineItem(
+                product: $product,
+                quantity: 5,
+            )
+        ];
+
+        $this->basket->discountItems = [
+            new CouponDiscountItem(
+                name: 'test',
+                amount: 200,
+                coupon: $coupon
+            )
+        ];
+
+        $this->productRepository->allows()->find('product-id')->andReturns($product);
+        $this->basketRepository->allows()->save($this->basket);
+
+        $this->action->handle();
+
+        $this->assertEquals(60000, $this->basket->subTotal);
+        $this->assertEquals(0, $this->basket->taxTotal);
+        $this->assertEquals(0, $this->basket->deliveryTotal);
+        $this->assertEquals(0, $this->basket->discountTotal);
+        $this->assertEquals(0, $this->basket->feeTotal);
+        $this->assertEquals(60000, $this->basket->total);
 
     }
 }

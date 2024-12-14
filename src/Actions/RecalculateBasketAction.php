@@ -4,6 +4,7 @@ namespace AltDesign\AltCommerce\Actions;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
+use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
@@ -52,8 +53,10 @@ class RecalculateBasketAction
 
     protected function calculateDiscountItems(Basket $basket): void
     {
+        $couponCodesApplied = array_map(fn(CouponItem $item) => $item->coupon->code(), $basket->coupons);
+
         foreach ($basket->discountItems as $key => $item) {
-            if (!($item instanceof CouponDiscountItem)) {
+            if (!($item instanceof CouponDiscountItem) || !in_array($item->coupon()->code(), $couponCodesApplied)) {
                 unset($basket->discountItems[$key]);
             }
         }
