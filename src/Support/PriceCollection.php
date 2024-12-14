@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Support;
 
+use AltDesign\AltCommerce\Contracts\BasketRepository;
 use Exception;
 
 final class PriceCollection
@@ -9,7 +10,7 @@ final class PriceCollection
     /**
      * @param Price[] $prices
      */
-    public function __construct(public array $prices = [])
+    public function __construct(protected BasketRepository $basketRepository, public array $prices = [])
     {
 
     }
@@ -23,6 +24,12 @@ final class PriceCollection
         }
 
         throw new Exception('Collection does not contain a price for currency '.$currency);
+    }
+
+    public function default(): Price
+    {
+        return $this->currency($this->basketRepository->get()->currency);
+
     }
 
 

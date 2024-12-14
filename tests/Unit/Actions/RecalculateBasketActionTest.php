@@ -11,6 +11,7 @@ use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
+use AltDesign\AltCommerce\Support\PriceCollectionFactory;
 use AltDesign\AltCommerce\Tests\Support\ProductFactory;
 use Mockery;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,7 @@ class RecalculateBasketActionTest extends TestCase
     protected $basketRepository;
     protected $productRepository;
     protected $action;
+    protected ProductFactory $productFactory;
 
     protected function setUp(): void
     {
@@ -43,16 +45,22 @@ class RecalculateBasketActionTest extends TestCase
             productRepository: $this->productRepository
         );
 
+        $this->productFactory = new ProductFactory(
+            new PriceCollectionFactory(
+                $this->basketRepository
+            )
+        );
+
     }
 
     public function test_basic_product_with_no_tax_rules(): void
     {
-        $product1 = ProductFactory::create([
+        $product1 = $this->productFactory->create([
             'id' => 'product-id-1',
             'price' => 5000,
         ]);
 
-        $product2 = ProductFactory::create([
+        $product2 = $this->productFactory->create([
             'id' => 'product-id-2',
             'price' => 250,
         ]);
@@ -93,14 +101,14 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_basic_product_with_tax_rules(): void
     {
-        $product1 = ProductFactory::create([
+        $product1 = $this->productFactory->create([
             'id' => 'product-id-1',
             'price' => 5000,
             'taxable' => true,
             'taxRate' => 20,
         ]);
 
-        $product2 = ProductFactory::create([
+        $product2 = $this->productFactory->create([
             'id' => 'product-id-2',
             'price' => 250,
             'taxable' => true,
@@ -148,7 +156,7 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_fixed_discount_coupon_code(): void
     {
-        $product = ProductFactory::create([
+        $product = $this->productFactory->create([
             'id' => 'product-id',
             'price' => 12000,
         ]);
@@ -191,7 +199,7 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_percentage_discount_coupon_code(): void
     {
-        $product = ProductFactory::create([
+        $product = $this->productFactory->create([
             'id' => 'product-id',
             'price' => 12000,
         ]);

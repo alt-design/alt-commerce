@@ -6,21 +6,29 @@ use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Support\PriceCollectionFactory;
 use Faker\Factory;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
 class ProductFactory
 {
-    public static function create(array $args = []): Product
+    public function __construct(protected  PriceCollectionFactory $priceCollectionFactory)
+    {
+
+    }
+
+    public function create(array $args = []): Product
     {
         $faker = Factory::create();
 
         $product = Mockery::mock(Product::class);
         $product->allows()->id()->andReturn($args['id'] ?? Uuid::uuid4());
-        $product->allows()->prices()->andReturn(new PriceCollection([
-            new Price($args['price'] ?? $faker->numberBetween(10,20000), $args['currency'] ?? 'GBP')
-        ]));
+        $product->allows()->prices()->andReturn(
+            $this->priceCollectionFactory->create(
+                prices: new Price($args['price'] ?? $faker->numberBetween(10,20000), $args['currency'] ?? 'GBP')
+            )
+        );
 
         $product->allows()->taxable()->andReturn($args['taxable'] ?? false);
 
