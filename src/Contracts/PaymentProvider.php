@@ -2,8 +2,8 @@
 
 namespace AltDesign\AltCommerce\Contracts;
 
-use AltDesign\AltCommerce\Commerce\PaymentGateway\PaymentRequest;
-use AltDesign\AltCommerce\Commerce\PaymentGateway\Transaction;
+use AltDesign\AltCommerce\Commerce\Payment\PaymentRequest;
+use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 
 interface PaymentProvider
 {

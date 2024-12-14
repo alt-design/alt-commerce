@@ -1,6 +1,6 @@
 <?php
 
-namespace AltDesign\AltCommerce\Commerce\PaymentGateway;
+namespace AltDesign\AltCommerce\Commerce\Payment;
 
 final class ClientToken
 {

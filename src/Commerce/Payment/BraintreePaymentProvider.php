@@ -1,6 +1,6 @@
 <?php
 
-namespace AltDesign\AltCommerce\Commerce\PaymentGateway;
+namespace AltDesign\AltCommerce\Commerce\Payment;
 
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Settings\Settings;
@@ -15,37 +15,38 @@ use DateTimeImmutable;
 
 class BraintreePaymentProvider implements PaymentProvider
 {
+
+    protected Gateway $gateway;
+
     protected Settings $settings;
 
     public function __construct(
-        SettingsRepository $settingsRepository,
+        protected SettingsRepository $settingsRepository,
+        protected string $name,
+        protected string $currency,
+        protected string $merchantId,
+        protected string $publicKey,
+        protected string $privateKey,
+        protected string $mode = 'sandbox',
     )
     {
-        $this->settings = $settingsRepository->get();
+        $this->settings = $this->settingsRepository->get();
+        $this->currency = strtoupper($this->currency);
     }
 
     public function clientToken(array $params = []): string
     {
-        if (empty($params['currency'])) {
-            throw new PaymentGatewayException('currency is required to obtain a client token with BrainTree');
-        }
-
-        return $this->gateway($params['currency'])->clientToken()->generate();
+        return $this->gateway()->clientToken()->generate();
     }
 
     public function supports(string $country, string $currency): bool
     {
-        try {
-            $this->gateway($currency);
-            return true;
-        } catch (PaymentGatewayException) {
-            return false;
-        }
+        return $this->currency === $currency;
     }
 
     public function attemptPayment(PaymentRequest $request): Transaction
     {
-        $result = $this->gateway($request->currency)
+        $result = $this->gateway()
             ->transaction()
             ->sale([
                 'orderId' => $request->orderNumber,
@@ -129,35 +130,18 @@ class BraintreePaymentProvider implements PaymentProvider
         return substr($description, 0, 22);
     }
 
-    protected function gateway(string $currency): Gateway
+    protected function gateway(): Gateway
     {
-        $currency = strtoupper($currency);
-
-        $config = $this->settings->braintreeConfiguration;
-
-        if (empty($config['BRAINTREE_'.$currency.'_ENABLED'])) {
-            throw new PaymentGatewayException("Currency $currency is not enabled");
-        }
-
-        $required = ['MERCHANT_ID', 'PUBLIC_KEY', 'PRIVATE_KEY'];
-        foreach ($required as $key) {
-            if (empty($config["BRAINTREE_{$currency}_{$key}"])) {
-                throw new PaymentGatewayException("Braintree configuration for currency $currency is missing $key");
-            }
-        }
-
-        return new Gateway([
-            'environment' => $config['BRAINTREE_ENV'] ?? 'sandbox',
-            'merchantId' => $config["BRAINTREE_{$currency}_MERCHANT_ID"],
-            'publicKey' => $config["BRAINTREE_{$currency}_PUBLIC_KEY"],
-            'privateKey' => $config["BRAINTREE_{$currency}_PRIVATE_KEY"],
+        return $this->gateway ?? $this->gateway = new Gateway([
+            'environment' => $this->mode,
+            'merchantId' => $this->merchantId,
+            'publicKey' => $this->publicKey,
+            'privateKey' => $this->privateKey,
         ]);
     }
 
-
-
     public function name(): string
     {
-        return 'braintree';
+        return $this->name;
     }
 }

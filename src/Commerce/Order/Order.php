@@ -7,7 +7,7 @@ use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
-use AltDesign\AltCommerce\Commerce\PaymentGateway\Transaction;
+use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\DiscountItem;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use DateTimeImmutable;

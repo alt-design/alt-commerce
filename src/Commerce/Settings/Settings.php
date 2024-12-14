@@ -2,7 +2,7 @@
 
 namespace AltDesign\AltCommerce\Commerce\Settings;
 
-readonly class Settings
+class Settings
 {
     /**
      * @param string $tradingName
@@ -11,7 +11,6 @@ readonly class Settings
      * @param string $defaultCurrency
      * @param array<int, string> $supportedCurrencies
      * @param int $couponLimit
-     * @param array<string, string> $braintreeConfiguration
      */
     public function __construct(
         public string $tradingName,
@@ -20,7 +19,6 @@ readonly class Settings
         public string $defaultCurrency = 'USD',
         public array $supportedCurrencies = ['USD', 'GBP', 'EUR', 'AUD'],
         public int $couponLimit = 1,
-        public array $braintreeConfiguration = []
     ) {
 
     }
