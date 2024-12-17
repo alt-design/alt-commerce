@@ -46,6 +46,10 @@ class BraintreePaymentProvider implements PaymentProvider
 
     public function attemptPayment(PaymentRequest $request): Transaction
     {
+        if (empty($request->billingAddress)) {
+            throw new PaymentGatewayException('Billing address is required');
+        }
+
         $result = $this->gateway()
             ->transaction()
             ->sale([

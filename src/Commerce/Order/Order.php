@@ -36,6 +36,7 @@ class Order
      * @param int $feeTotal
      * @param int $total
      * @param int $outstanding
+     * @param string|null $basketId
      * @param Address|null $billingAddress
      * @param Address|null $shippingAddress
      * @param Transaction[] $transactions
@@ -57,6 +58,7 @@ class Order
         public int $feeTotal,
         public int $total,
         public int $outstanding,
+        public string|null $basketId = null,
         public Address|null $billingAddress = null,
         public Address|null $shippingAddress = null,
         public array $transactions = [],

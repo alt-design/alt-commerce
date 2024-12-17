@@ -16,7 +16,7 @@ class Basket
      * @param DiscountItem[] $discountItems
      */
     public function __construct(
-        public readonly string $id,
+        public string $id,
         public string $currency,
         public string $countryCode,
         public array $discountItems = [],
@@ -31,7 +31,6 @@ class Basket
         public int $discountTotal = 0,
         public int $feeTotal = 0,
         public int $total = 0,
-
     ) {
 
     }

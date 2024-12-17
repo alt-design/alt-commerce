@@ -2,7 +2,7 @@
 
 namespace AltDesign\AltCommerce\Commerce\Customer;
 
-final class Address
+class Address
 {
     public function __construct(
         public string|null $company = null,
