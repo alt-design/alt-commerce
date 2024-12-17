@@ -18,6 +18,8 @@ class OrderFactory
     /**
      * @param Basket $basket
      * @param Customer $customer
+     * @param Address|null $billingAddress
+     * @param Address|null $shippingAddress
      * @param array<string, string> $additional
      * @return Order
      */
@@ -29,11 +31,8 @@ class OrderFactory
         array $additional = []
     ): Order
     {
-
-        $billingAddress = $billingAddress ?? $customer->billingAddress();
-        $shippingAddress = $shippingAddress ?? $customer->shippingAddress();
-
         return new Order(
+            customerId: $customer->id(),
             status: OrderStatus::DRAFT,
             currency: $basket->currency,
             orderNumber: $this->orderNumberGenerator->reserve(),
@@ -55,6 +54,5 @@ class OrderFactory
             transactions: [],
             additional: $additional,
         );
-
     }
 }

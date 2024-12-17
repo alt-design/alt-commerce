@@ -21,6 +21,7 @@ class Order
     public readonly DateTimeImmutable $createdAt;
 
     /**
+     * @param string $customerId
      * @param OrderStatus $status
      * @param string $currency
      * @param string $orderNumber
@@ -43,6 +44,7 @@ class Order
      * @param array<string, string> $additional
      */
     public function __construct(
+        public string $customerId,
         public OrderStatus $status,
         public string $currency,
         public string $orderNumber,

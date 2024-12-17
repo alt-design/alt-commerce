@@ -9,7 +9,6 @@ use AltDesign\AltCommerce\Commerce\Payment\PaymentRequestFactory;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
-use AltDesign\AltCommerce\Contracts\PaymentProviderRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
