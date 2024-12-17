@@ -6,8 +6,7 @@ final class Address
 {
     public function __construct(
         public string|null $company = null,
-        public string|null $firstName = null,
-        public string|null $lastName= null,
+        public string|null $fullName = null,
         public string|null $countryCode = null,
         public string|null $postalCode = null,
         public string|null $region = null,

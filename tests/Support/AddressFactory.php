@@ -12,8 +12,7 @@ class AddressFactory
         $faker = Factory::create($locale);
         return new Address(
             company: $args['company'] ?? $faker->company(),
-            firstName: $args['firstName'] ?? $faker->firstName(),
-            lastName: $args['lastName'] ?? $faker->lastName(),
+            fullName: $args['fullName'] ?? $faker->name(),
             countryCode: $args['countryCode'] ?? $faker->countryCode(),
             postalCode: $args['postalCode'] ?? $faker->postcode(),
             region: $args['region'] ?? null,

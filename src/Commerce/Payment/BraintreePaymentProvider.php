@@ -109,14 +109,27 @@ class BraintreePaymentProvider implements PaymentProvider
         return [
             'company' => $address->company,
             'countryCodeAlpha2' => $address->countryCode,
-            'firstName' => $address->firstName,
-            'lastName' => $address->lastName,
+            'firstName' => $address->fullName ? $this->firstName($address->fullName) : null,
+            'lastName' => $address->fullName ? $this->lastName($address->fullName) : null,
             'locality' => $address->locality,
             'postalCode' => $address->postalCode,
             'region' => $address->region,
             'streetAddress' => $address->street,
             'phoneNumber' => $address->phoneNumber,
         ];
+    }
+
+    protected function firstName(string $fullName): string
+    {
+        $nameParts = explode(' ', $fullName);
+        return $nameParts[0];
+    }
+
+    protected function lastName(string $fullName): string
+    {
+        $nameParts = explode(' ', $fullName);
+        array_shift($nameParts);
+        return implode(' ', $nameParts);
     }
 
     protected function getStatementDescriptor(string $orderNumber): string
