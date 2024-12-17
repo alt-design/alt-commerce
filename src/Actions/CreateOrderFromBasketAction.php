@@ -12,6 +12,7 @@ use AltDesign\AltCommerce\Contracts\OrderRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
+use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 
 class CreateOrderFromBasketAction
 {
@@ -27,19 +28,37 @@ class CreateOrderFromBasketAction
 
     }
 
+    /**
+     * @param string $paymentProvider
+     * @param string $paymentToken
+     * @param Customer $customer
+     * @param Address|null $billingAddress
+     * @param Address|null $shippingAddress
+     * @param array<string,string> $additional
+     * @return Order
+     * @throws PaymentFailedException
+     * @throws PaymentGatewayException
+     */
     public function handle(
         string $paymentProvider,
         string $paymentToken,
         Customer $customer,
         Address|null $billingAddress = null,
-        Address|null $shippingAddress = null
+        Address|null $shippingAddress = null,
+        array $additional = [],
     ): Order
     {
         $basket = $this->basketRepository->get();
 
         // find existing or create from basket
         $order = $this->orderRepository->findByBasketId($basket->id) ??
-            $this->orderFactory->createFromBasket($basket, $customer, $billingAddress, $shippingAddress);
+            $this->orderFactory->createFromBasket(
+                basket: $basket,
+                customer: $customer,
+                billingAddress: $billingAddress,
+                shippingAddress: $shippingAddress,
+                additional: $additional
+            );
 
         // ensure order is correct status for attempting payment
         if ($order->status !== OrderStatus::DRAFT) {

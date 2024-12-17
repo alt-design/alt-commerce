@@ -82,7 +82,7 @@ class CreateOrderFromBasketTest extends TestCase
     {
         $this->orderRepository->allows()->findByBasketId('basket-1')->andReturn(null);
         $this->orderRepository->allows()->save($this->order)->once();
-        $this->orderFactory->expects()->createFromBasket($this->basket, $this->customer, null, null)->once()->andReturn($this->order);
+        $this->orderFactory->expects()->createFromBasket($this->basket, $this->customer, null, null, [])->once()->andReturn($this->order);
         $order = $this->action->handle('payment-provider', 'payment-token', $this->customer);
         $this->assertSame($this->order, $order);
     }
