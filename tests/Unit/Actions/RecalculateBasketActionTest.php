@@ -12,6 +12,7 @@ use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
+use AltDesign\AltCommerce\Enum\DiscountType;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\Support\PriceCollectionFactory;
 use AltDesign\AltCommerce\Tests\Support\ProductFactory;
@@ -279,5 +280,43 @@ class RecalculateBasketActionTest extends TestCase
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(60000, $this->basket->total);
 
+    }
+
+    public function test_existing_coupon_codes_get_removed_before_recalculating(): void
+    {
+
+        $coupon = Mockery::mock(Coupon::class);
+        $coupon->allows()->code()->andReturn('20OFF');
+        $coupon->allows()->discountType()->andReturn(DiscountType::FIXED);
+        $coupon->allows()->discountAmount()->andReturn(20);
+        $coupon->allows()->name()->andReturn('20% off everything');
+
+        $product = $this->productFactory->create([
+            'id' => 'product-id',
+            'price' => 12000,
+        ]);
+        $this->productRepository->allows()->find('product-id')->andReturns($product);
+        $this->basketRepository->allows()->save($this->basket);
+
+        $this->basket->lineItems = [
+            new LineItem(
+                product: $product,
+                quantity: 5,
+            )
+        ];
+
+        $this->basket->discountItems = [
+            new CouponDiscountItem(
+                name: '20% off everything',
+                amount: 20,
+                coupon: $coupon
+            )
+        ];
+
+        $this->basket->coupons = [new CouponItem(coupon: $coupon)];
+
+        $this->action->handle();
+
+        $this->assertCount(1, $this->basket->discountItems);
     }
 }
