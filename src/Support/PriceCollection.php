@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\Support;
 
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use Exception;
+use AltDesign\AltCommerce\Exceptions\PriceNotAvailableException;
 
 final class PriceCollection
 {
@@ -23,7 +23,7 @@ final class PriceCollection
             }
         }
 
-        throw new Exception('Collection does not contain a price for currency '.$currency);
+        throw new PriceNotAvailableException('Collection does not contain a price for currency '.$currency);
     }
 
     public function default(): Price

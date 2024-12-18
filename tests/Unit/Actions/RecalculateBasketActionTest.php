@@ -14,7 +14,6 @@ use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
-use AltDesign\AltCommerce\Support\PriceCollectionFactory;
 use AltDesign\AltCommerce\Tests\Support\ProductFactory;
 use Mockery;
 use PHPUnit\Framework\TestCase;
@@ -48,11 +47,7 @@ class RecalculateBasketActionTest extends TestCase
             productRepository: $this->productRepository
         );
 
-        $this->productFactory = new ProductFactory(
-            new PriceCollectionFactory(
-                $this->basketRepository
-            )
-        );
+        $this->productFactory = new ProductFactory();
 
     }
 

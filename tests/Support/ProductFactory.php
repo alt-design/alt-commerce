@@ -2,18 +2,19 @@
 
 namespace AltDesign\AltCommerce\Tests\Support;
 
+use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
+use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
-use AltDesign\AltCommerce\Support\PriceCollectionFactory;
 use Faker\Factory;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
 class ProductFactory
 {
-    public function __construct(protected  PriceCollectionFactory $priceCollectionFactory)
+    public function __construct()
     {
 
     }
@@ -22,11 +23,18 @@ class ProductFactory
     {
         $faker = Factory::create();
 
+        $basket = Mockery::mock(Basket::class);
+        $basket->currency = $args['currency'] ?? 'GBP';
+
+        $basketRepository = Mockery::mock(BasketRepository::class);
+        $basketRepository->allows()->get()->andReturn($basket);
+
         $product = Mockery::mock(Product::class);
         $product->allows()->id()->andReturn($args['id'] ?? Uuid::uuid4());
         $product->allows()->prices()->andReturn(
-            $this->priceCollectionFactory->create(
-                prices: new Price($args['price'] ?? $faker->numberBetween(10,20000), $args['currency'] ?? 'GBP')
+            new PriceCollection(
+                basketRepository: $basketRepository,
+                prices: [new Price($args['price'] ?? $faker->numberBetween(10,20000), $args['currency'] ?? 'GBP')]
             )
         );
 
