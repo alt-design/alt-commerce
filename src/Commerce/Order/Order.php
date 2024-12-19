@@ -8,6 +8,7 @@ use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
+use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\DiscountItem;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use DateTimeImmutable;
@@ -21,7 +22,7 @@ class Order
     public readonly DateTimeImmutable $createdAt;
 
     /**
-     * @param string $customerId
+     * @param Customer $customer
      * @param OrderStatus $status
      * @param string $currency
      * @param string $orderNumber
@@ -44,7 +45,7 @@ class Order
      * @param array<string, string> $additional
      */
     public function __construct(
-        public string $customerId,
+        public Customer $customer,
         public OrderStatus $status,
         public string $currency,
         public string $orderNumber,

@@ -32,7 +32,7 @@ class OrderFactory
     ): Order
     {
         return new Order(
-            customerId: $customer->id(),
+            customer: $customer,
             status: OrderStatus::DRAFT,
             currency: $basket->currency,
             orderNumber: $this->orderNumberGenerator->reserve(),
