@@ -29,7 +29,16 @@ final class PriceCollection
     public function default(): Price
     {
         return $this->currency($this->basketRepository->get()->currency);
+    }
 
+    public function supports(string $currency): bool
+    {
+        foreach ($this->prices as $price) {
+            if (strtoupper($price->currency) === $currency) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
