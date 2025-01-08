@@ -8,11 +8,16 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Product;
+use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
 class RemoveFromBasketActionTest extends TestCase
 {
+
+    use CommerceHelper;
 
     protected $basket;
     protected $basketRepository;
@@ -25,6 +30,7 @@ class RemoveFromBasketActionTest extends TestCase
 
         $this->basket = Mockery::mock(Basket::class);
         $this->basket->lineItems = [];
+        $this->basket->currency = 'GBP';
 
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturn($this->basket);
@@ -39,15 +45,14 @@ class RemoveFromBasketActionTest extends TestCase
 
     public function test_remove_product_from_basket()
     {
-        $product = Mockery::mock(Product::class);
-        $product->allows()->id()->andReturn('product-id');
+        $product = $this->createProductMock(
+            id: 'product-id',
+            priceCollection: new PriceCollection([
+                new Price(200, 'GBP')
+            ])
+        );
 
-        $lineItem = Mockery::mock(LineItem::class);
-        $lineItem->product = $product;
-
-        $this->basket->lineItems = [
-            $lineItem
-        ];
+        $this->addProductToBasket($product, 2);
 
         $this->recalculateBasketAction->allows('handle')->once();
         $this->basketRepository->allows('save')->once();

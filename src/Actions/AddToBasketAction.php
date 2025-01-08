@@ -5,6 +5,7 @@ namespace AltDesign\AltCommerce\Actions;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
+use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
@@ -28,6 +29,7 @@ class AddToBasketAction
      * @param array<string, string> $options
      * @return void
      * @throws ProductNotFoundException
+     * @throws CurrencyNotSupportedException
      */
     public function handle(string $productId, int $quantity = 1, array $options = []): void
     {
@@ -42,13 +44,22 @@ class AddToBasketAction
                 throw new ProductNotFoundException($productId);
             }
 
+            if (!$product->prices()->supports($basket->currency)) {
+                throw new CurrencyNotSupportedException();
+            }
+
             $basket->lineItems[] = new LineItem(
-                product: $product,
+                productId: $product->id(),
+                productName: $product->name(),
+                productType: $product->type(),
+                taxable: $product->taxable(),
+                taxRules: $product->taxRules(),
+                options: $options,
+                productData: $product->data(),
                 quantity: $quantity,
-                options: $options
+                subTotal: $product->prices()->currency($basket->currency),
             );
         }
-        $this->basketRepository->save($basket);
 
         $this->recalculateBasketAction->handle();
     }

@@ -32,7 +32,7 @@ class RecalculateBasketAction
     {
         $basket = $this->basketRepository->get();
 
-        $this->refreshProducts($basket);
+        //$this->refreshProducts($basket);
 
         $this->calculateLineItemTotals($basket);
         $this->calculateDiscountItems($basket);
@@ -45,8 +45,8 @@ class RecalculateBasketAction
 
     protected function refreshProducts(Basket $basket): void
     {
-        foreach ($basket->lineItems as $key => $lineItem) {
-            $product = $this->productRepository->find($lineItem->product->id());
+        foreach ($basket->lineItems as $lineItem) {
+            $product = $this->productRepository->find($lineItem->productId);
             // todo - ensure product is still available and in stock
         }
     }
@@ -72,7 +72,6 @@ class RecalculateBasketAction
     {
         $basket->subTotal = 0;
         foreach ($basket->lineItems as $lineItem) {
-            $lineItem->subTotal = $lineItem->product->prices()->currency($basket->currency)->amount;
             $lineItem->amount = $lineItem->subTotal * $lineItem->quantity;
             $lineItem->discountAmount = 0; // todo reserved for line specific discount amount
             $basket->subTotal += $lineItem->amount;
@@ -85,14 +84,14 @@ class RecalculateBasketAction
         foreach ($basket->lineItems as $lineItem) {
 
             $taxRules = [];
-            foreach ($lineItem->product->taxRules() as $taxRule) {
+            foreach ($lineItem->taxRules as $taxRule) {
                 if (!in_array($basket->countryCode, $taxRule->countries)) {
                     continue;
                 }
                 $taxRules[] = $taxRule;
             }
 
-            if (!$lineItem->product->taxable() || empty($taxRules)) {
+            if (!$lineItem->taxable || empty($taxRules)) {
                 continue;
             }
 
@@ -106,10 +105,8 @@ class RecalculateBasketAction
             }
         }
 
-
         // Calculate tax for discounts
         if (!empty($basket->discountItems) && !empty($basket->taxItems)) {
-
 
             $calculator = new WeightedAverageCalculator();
             foreach ($basket->taxItems as $taxItem) {

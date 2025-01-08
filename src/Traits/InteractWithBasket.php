@@ -10,7 +10,7 @@ trait InteractWithBasket
     protected function find(Basket $basket, string $productId): ?LineItem
     {
         foreach ($basket->lineItems as $item) {
-            if ($item->product->id() === $productId) {
+            if ($item->productId === $productId) {
                 return $item;
             }
         }

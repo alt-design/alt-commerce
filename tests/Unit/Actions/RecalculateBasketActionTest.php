@@ -9,23 +9,29 @@ use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
+use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
-use AltDesign\AltCommerce\Tests\Support\ProductFactory;
+use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
 class RecalculateBasketActionTest extends TestCase
 {
 
+    use CommerceHelper;
+
     protected $basket;
     protected $basketRepository;
     protected $productRepository;
     protected $action;
-    protected ProductFactory $productFactory;
+    protected $product1;
+    protected $product2;
 
     protected function setUp(): void
     {
@@ -40,55 +46,53 @@ class RecalculateBasketActionTest extends TestCase
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturns($this->basket);
 
+        $this->product1 = $this->createProductMock(
+            id: 'product-1',
+            name: 'Test Product 1',
+            priceCollection: new PriceCollection([
+                new Price(100, 'GBP'),
+            ])
+        );
+
+        $this->product2 = $this->createProductMock(
+            id: 'product-2',
+            name: 'Test Product 2',
+            priceCollection: new PriceCollection([
+                new Price(250, 'GBP'),
+            ])
+        );
+
         $this->productRepository = Mockery::mock(ProductRepository::class);
+        $this->productRepository->allows()->find('product-1')->andReturns($this->product1);
+        $this->productRepository->allows()->find('product-2')->andReturns($this->product2);
 
         $this->action = new RecalculateBasketAction(
             basketRepository: $this->basketRepository,
             productRepository: $this->productRepository
         );
 
-        $this->productFactory = new ProductFactory();
 
     }
 
     public function test_basic_product_with_no_tax_rules(): void
     {
-        $product1 = $this->productFactory->create([
-            'id' => 'product-id-1',
-            'price' => 5000,
-        ]);
 
-        $product2 = $this->productFactory->create([
-            'id' => 'product-id-2',
-            'price' => 250,
-        ]);
+        $this->addProductToBasket($this->product1, 2);
+        $this->addProductToBasket($this->product2, 5);
 
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product1,
-                quantity: 2,
-            ),
-            new LineItem(
-                product: $product2,
-                quantity: 5,
-            )
-        ];
-
-        $this->productRepository->allows()->find('product-id-1')->andReturns($product1);
-        $this->productRepository->allows()->find('product-id-2')->andReturns($product2);
         $this->basketRepository->allows()->save($this->basket);
 
         $this->action->handle();
 
-        $this->assertEquals(11250, $this->basket->subTotal);
+        $this->assertEquals(1450, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
         $this->assertEquals(0, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
-        $this->assertEquals(11250, $this->basket->total)    ;
+        $this->assertEquals(1450, $this->basket->total);
 
-        $this->assertEquals(5000, $this->basket->lineItems[0]->subTotal);
-        $this->assertEquals(10000, $this->basket->lineItems[0]->amount);
+        $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
+        $this->assertEquals(200, $this->basket->lineItems[0]->amount);
         $this->assertEquals(0, $this->basket->lineItems[0]->discountAmount);
 
         $this->assertEquals(250, $this->basket->lineItems[1]->subTotal);
@@ -99,53 +103,47 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_basic_product_with_tax_rules(): void
     {
-        $product1 = $this->productFactory->create([
-            'id' => 'product-id-1',
-            'price' => 5000,
-            'taxable' => true,
-            'taxRate' => 20,
-        ]);
-
-        $product2 = $this->productFactory->create([
-            'id' => 'product-id-2',
-            'price' => 250,
-            'taxable' => true,
-            'taxRate' => 10,
-        ]);
-
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product1,
-                quantity: 2,
-            ),
-            new LineItem(
-                product: $product2,
-                quantity: 5,
+        $this->product1->allows()->taxable()->andReturn(true);
+        $this->product1->allows()->taxRules()->andReturn([
+            new TaxRule(
+                name: 'default-tax-rate',
+                rate: 20,
+                countries: ['GB'],
             )
-        ];
+        ]);
 
-        $this->productRepository->allows()->find('product-id-1')->andReturns($product1);
-        $this->productRepository->allows()->find('product-id-2')->andReturns($product2);
+        $this->product2->allows()->taxable()->andReturn(true);
+        $this->product2->allows()->taxRules()->andReturn([
+            new TaxRule(
+                name: 'default-tax-rate',
+                rate: 10,
+                countries: ['GB'],
+            )
+        ]);
+
+        $this->addProductToBasket($this->product1, 2); //100 = 200  * 0.2 = 40
+        $this->addProductToBasket($this->product2, 5); // 250 = 1250 * 0.1 = 125
+
         $this->basketRepository->allows()->save($this->basket);
 
         $this->action->handle();
 
-        $this->assertEquals(11250, $this->basket->subTotal);
-        $this->assertEquals(2125, $this->basket->taxTotal);
+        $this->assertEquals(1450, $this->basket->subTotal);
+        $this->assertEquals(165, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
         $this->assertEquals(0, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
-        $this->assertEquals(13375, $this->basket->total);
+        $this->assertEquals(1615, $this->basket->total);
 
-        $this->assertEquals(5000, $this->basket->lineItems[0]->subTotal);
-        $this->assertEquals(10000, $this->basket->lineItems[0]->amount);
+        $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
+        $this->assertEquals(200, $this->basket->lineItems[0]->amount);
         $this->assertEquals(0, $this->basket->lineItems[0]->discountAmount);
 
         $this->assertEquals(250, $this->basket->lineItems[1]->subTotal);
         $this->assertEquals(1250, $this->basket->lineItems[1]->amount);
         $this->assertEquals(0, $this->basket->lineItems[1]->discountAmount);
 
-        $this->assertEquals(2000, $this->basket->taxItems[0]->amount);
+        $this->assertEquals(40, $this->basket->taxItems[0]->amount);
         $this->assertEquals(20, $this->basket->taxItems[0]->rate);
 
         $this->assertEquals(125, $this->basket->taxItems[1]->amount);
@@ -154,17 +152,11 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_fixed_discount_coupon_code(): void
     {
-        $product = $this->productFactory->create([
-            'id' => 'product-id',
-            'price' => 12000,
-        ]);
+        $this->product1->allows()->prices()->andReturns(new PriceCollection([
+            new Price(12000, 'GBP'),
+        ]));
 
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product,
-                quantity: 5,
-            )
-        ];
+        $this->addProductToBasket($this->product1, 5);
 
         $this->basket->coupons = [
             new CouponItem(
@@ -178,7 +170,6 @@ class RecalculateBasketActionTest extends TestCase
             )
         ];
 
-        $this->productRepository->allows()->find('product-id')->andReturns($product);
         $this->basketRepository->allows()->save($this->basket);
 
         $this->action->handle();
@@ -197,17 +188,12 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_percentage_discount_coupon_code(): void
     {
-        $product = $this->productFactory->create([
-            'id' => 'product-id',
-            'price' => 12000,
-        ]);
+        $this->product1->allows()->prices()->andReturns(new PriceCollection([
+            new Price(12000, 'GBP'),
+        ]));
 
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product,
-                quantity: 5,
-            )
-        ];
+        $this->addProductToBasket($this->product1, 5);
+
 
         $this->basket->coupons = [
             new CouponItem(
@@ -221,7 +207,6 @@ class RecalculateBasketActionTest extends TestCase
             )
         ];
 
-        $this->productRepository->allows()->find('product-id')->andReturns($product);
         $this->basketRepository->allows()->save($this->basket);
 
         $this->action->handle();
@@ -238,22 +223,19 @@ class RecalculateBasketActionTest extends TestCase
 
     }
 
+
     public function test_removing_coupon_code(): void
     {
-        $product = $this->productFactory->create([
-            'id' => 'product-id',
-            'price' => 12000,
-        ]);
+
+        $this->product1->allows()->prices()->andReturns(new PriceCollection([
+            new Price(12000, 'GBP'),
+        ]));
+
+        $this->addProductToBasket($this->product1, 5);
+
 
         $coupon = Mockery::mock(Coupon::class);
         $coupon->allows()->code()->andReturn('test-code');
-
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product,
-                quantity: 5,
-            )
-        ];
 
         $this->basket->discountItems = [
             new CouponDiscountItem(
@@ -263,7 +245,6 @@ class RecalculateBasketActionTest extends TestCase
             )
         ];
 
-        $this->productRepository->allows()->find('product-id')->andReturns($product);
         $this->basketRepository->allows()->save($this->basket);
 
         $this->action->handle();
@@ -280,25 +261,20 @@ class RecalculateBasketActionTest extends TestCase
     public function test_existing_coupon_codes_get_removed_before_recalculating(): void
     {
 
+        $this->product1->allows()->prices()->andReturns(new PriceCollection([
+            new Price(12000, 'GBP'),
+        ]));
+
+        $this->addProductToBasket($this->product1, 5);
+
+        $this->basketRepository->allows()->save($this->basket);
+
+
         $coupon = Mockery::mock(Coupon::class);
         $coupon->allows()->code()->andReturn('20OFF');
         $coupon->allows()->discountType()->andReturn(DiscountType::FIXED);
         $coupon->allows()->discountAmount()->andReturn(20);
         $coupon->allows()->name()->andReturn('20% off everything');
-
-        $product = $this->productFactory->create([
-            'id' => 'product-id',
-            'price' => 12000,
-        ]);
-        $this->productRepository->allows()->find('product-id')->andReturns($product);
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->basket->lineItems = [
-            new LineItem(
-                product: $product,
-                quantity: 5,
-            )
-        ];
 
         $this->basket->discountItems = [
             new CouponDiscountItem(
@@ -314,4 +290,7 @@ class RecalculateBasketActionTest extends TestCase
 
         $this->assertCount(1, $this->basket->discountItems);
     }
+
+
+
 }

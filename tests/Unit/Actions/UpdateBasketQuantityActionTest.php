@@ -9,11 +9,16 @@ use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
+use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use PHPUnit\Framework\TestCase;
 
 class UpdateBasketQuantityActionTest extends TestCase
 {
+
+    use CommerceHelper;
 
     protected $basket;
     protected $basketRepository;
@@ -24,6 +29,7 @@ class UpdateBasketQuantityActionTest extends TestCase
     {
 
         $this->basket = Mockery::mock(Basket::class);
+        $this->basket->currency = 'GBP';
         $this->basket->lineItems = [];
 
         $this->basketRepository = Mockery::mock(BasketRepository::class);
@@ -39,23 +45,20 @@ class UpdateBasketQuantityActionTest extends TestCase
 
     public function test_updating_quantity_with_existing_product()
     {
-        $product = Mockery::mock(Product::class);
-        $product->allows()->id()->andReturn('product-id');
-
-        $lineItem = Mockery::mock(LineItem::class);
-        $lineItem->product = $product;
-        $lineItem->quantity = 2;
-
-        $this->basket->lineItems = [
-            $lineItem
-        ];
+        $product = $this->createProductMock(
+            id: 'product-id',
+            priceCollection: new PriceCollection([
+                new Price(200, 'GBP')
+            ])
+        );
+        $this->addProductToBasket($product, 2);
 
         $this->basketRepository->allows()->save($this->basket);
         $this->recalculateBasketAction->allows('handle')->once();
 
         $this->action->handle('product-id', 3);
 
-        $this->assertEquals('product-id', $this->basket->lineItems[0]->product->id());
+        $this->assertEquals('product-id', $this->basket->lineItems[0]->productId);
         $this->assertEquals(3, $this->basket->lineItems[0]->quantity);
     }
 

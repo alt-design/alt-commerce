@@ -19,7 +19,7 @@ class RemoveFromBasketAction
     {
         $basket = $this->basketRepository->get();
         foreach ($basket->lineItems as $key => $item) {
-            if ($item->product->id() === $productId ) {
+            if ($item->productId === $productId ) {
                 unset($basket->lineItems[$key]);
             }
         }
