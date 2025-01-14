@@ -108,7 +108,7 @@ class RecalculateBasketActionTest extends TestCase
             new TaxRule(
                 name: 'default-tax-rate',
                 rate: 20,
-                countries: ['GB'],
+                countryFilter: ['GB'],
             )
         ]);
 
@@ -117,7 +117,7 @@ class RecalculateBasketActionTest extends TestCase
             new TaxRule(
                 name: 'default-tax-rate',
                 rate: 10,
-                countries: ['GB'],
+                countryFilter: ['GB'],
             )
         ]);
 
@@ -289,6 +289,25 @@ class RecalculateBasketActionTest extends TestCase
         $this->action->handle();
 
         $this->assertCount(1, $this->basket->discountItems);
+    }
+
+    public function test_tax_rules_are_included_with_no_country_filter()
+    {
+        $this->product1->allows()->taxRules()->andReturns([
+            new TaxRule(name: 'VAT 20', rate: 20, countryFilter: [])
+        ]);
+        $this->product1->allows()->taxable()->andReturns(true);
+
+        $this->addProductToBasket($this->product1, 1);
+
+        $this->basketRepository->allows()->save($this->basket);
+
+        $this->action->handle();
+
+        $this->assertEquals(20, $this->basket->taxTotal);
+
+
+
     }
 
 

@@ -7,12 +7,12 @@ class TaxRule
     /**
      * @param string $name
      * @param int $rate
-     * @param string[] $countries
+     * @param string[] $countryFilter
      */
     public function __construct(
         public string $name,
-        public int $rate,
-        public array $countries,
+        public int    $rate,
+        public array  $countryFilter = [],
     )
     {
 

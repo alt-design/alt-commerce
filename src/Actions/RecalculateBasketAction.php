@@ -85,7 +85,7 @@ class RecalculateBasketAction
 
             $taxRules = [];
             foreach ($lineItem->taxRules as $taxRule) {
-                if (!in_array($basket->countryCode, $taxRule->countries)) {
+                if (!empty($taxRule->countryFilter) && !in_array($basket->countryCode, $taxRule->countryFilter)) {
                     continue;
                 }
                 $taxRules[] = $taxRule;
