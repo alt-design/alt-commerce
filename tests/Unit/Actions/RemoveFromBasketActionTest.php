@@ -5,14 +5,12 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveFromBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
-use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class RemoveFromBasketActionTest extends TestCase
 {

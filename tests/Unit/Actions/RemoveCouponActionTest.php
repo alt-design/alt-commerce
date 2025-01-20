@@ -11,7 +11,7 @@ use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class RemoveCouponActionTest extends TestCase
 {

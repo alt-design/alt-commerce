@@ -17,10 +17,7 @@ class EmptyBasketAction
 
     public function handle(): void
     {
-        $basket = $this->basketRepository->get();
-        $basket->lineItems = [];
-        $this->basketRepository->save($basket);
-
+        $this->basketRepository->delete();
         $this->recalculateBasketAction->handle();
     }
 

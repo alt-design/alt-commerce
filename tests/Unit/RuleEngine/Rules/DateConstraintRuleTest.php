@@ -5,7 +5,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 use AltDesign\AltCommerce\RuleEngine\Rules\DateConstraintRule;
 use Carbon\Carbon;
 use DateTimeImmutable;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 final class DateConstraintRuleTest extends TestCase
 {

@@ -12,27 +12,34 @@ use PHPUnit\Framework\TestCase;
 
 class EmptyBasketActionTest extends TestCase
 {
-    public function test_clears_basket_and_recalculates_total()
-    {
+    protected $basket;
+    protected $basketRepository;
+    protected $recalculateBasketAction;
 
-        $basketMock = Mockery::mock(Basket::class);
-        $basketMock->lineItems = [
+    public function setup(): void
+    {
+        $this->basket = Mockery::mock(Basket::class);
+        $this->basket->lineItems = [
             Mockery::mock(LineItem::class),
             Mockery::mock(LineItem::class),
             Mockery::mock(LineItem::class),
         ];
 
-        $basketRepositoryMock = Mockery::mock(BasketRepository::class);
-        $basketRepositoryMock->allows()->get()->andReturn($basketMock);
-        $basketRepositoryMock->allows()->save($basketMock);
-
-        $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
-        $recalculateBasketActionMock->allows('handle')->once();
-
-
-        $action = new EmptyBasketAction($basketRepositoryMock, $recalculateBasketActionMock);
-        $action->handle();
-
-        $this->assertCount(0, $basketMock->lineItems);
+        $this->basketRepository = Mockery::mock(BasketRepository::class);
+        $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
+        $this->action = new EmptyBasketAction($this->basketRepository, $this->recalculateBasketAction);
     }
+
+    /**
+     * @doesNotPerformAssertions
+     */
+    public function test_clears_basket_and_recalculates_total()
+    {
+        $this->basketRepository->expects()->delete()->once();
+        $this->recalculateBasketAction->expects()->handle()->once();
+        $this->action->handle();
+
+
+    }
+
 }

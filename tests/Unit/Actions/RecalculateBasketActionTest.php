@@ -6,7 +6,6 @@ use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
-use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
@@ -19,7 +18,7 @@ use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class RecalculateBasketActionTest extends TestCase
 {

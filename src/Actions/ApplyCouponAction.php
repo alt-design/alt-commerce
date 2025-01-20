@@ -56,7 +56,8 @@ class ApplyCouponAction
     protected function validate(Basket $basket, Coupon $coupon): void
     {
         $result = $this->ruleManager->evaluate($coupon->ruleGroup(), context: [
-            'basket' => $basket
+            'basket' => $basket,
+            'coupon' => $coupon,
         ]);
 
         if (!$result->result) {

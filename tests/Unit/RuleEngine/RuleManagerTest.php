@@ -10,7 +10,7 @@ use AltDesign\AltCommerce\RuleEngine\Rules\BasketSubTotalConstraintRule;
 use AltDesign\AltCommerce\RuleEngine\Rules\ShippingCountryConstraintRule;
 use AltDesign\AltCommerce\Tests\Support\AddressFactory;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class RuleManagerTest extends TestCase
 {

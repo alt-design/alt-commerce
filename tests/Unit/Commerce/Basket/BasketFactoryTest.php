@@ -8,7 +8,7 @@ use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Contracts\VisitorLocator;
 use AltDesign\AltCommerce\Support\Location;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 final class BasketFactoryTest extends TestCase
 {

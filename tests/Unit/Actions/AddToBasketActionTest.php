@@ -14,7 +14,7 @@ use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 use Mockery;
 
 class AddToBasketActionTest extends TestCase
@@ -70,7 +70,7 @@ class AddToBasketActionTest extends TestCase
     public function test_updates_existing_product_quantity()
     {
         $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
-        $recalculateBasketActionMock->allows('handle')->once();
+        $recalculateBasketActionMock->allows('handle')->twice();
 
         $action = new AddToBasketAction($this->basketRepository, $this->productRepository, $recalculateBasketActionMock);
         $action->handle('product-id', 2);

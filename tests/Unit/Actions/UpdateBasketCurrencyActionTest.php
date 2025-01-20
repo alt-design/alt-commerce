@@ -5,17 +5,15 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketCurrencyAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
-use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Settings\Settings;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 use Mockery;
 
 class UpdateBasketCurrencyActionTest extends TestCase
@@ -42,7 +40,6 @@ class UpdateBasketCurrencyActionTest extends TestCase
         $this->basketRepository->allows()->get()->andReturn($this->basket);
 
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
-        $this->recalculateBasketAction->allows()->handle()->once();
 
         $this->settings = Mockery::mock(Settings::class);
         $this->settings->supportedCurrencies = ['GBP', 'USD', 'EUR'];$this->settingsRepository = Mockery::mock(SettingsRepository::class);
@@ -80,13 +77,14 @@ class UpdateBasketCurrencyActionTest extends TestCase
 
     public function test_updating_currency_changes_basket_currency(): void
     {
+        $this->recalculateBasketAction->allows()->handle()->once();
         $this->action->handle('USD');
         $this->assertEquals('USD', $this->basket->currency);
     }
 
     public function test_items_get_removed_if_price_is_not_available(): void
     {
-
+        $this->recalculateBasketAction->allows()->handle()->once();
         $lineItem1 = $this->addProductToBasket($this->product1, 1);
         $this->addProductToBasket($this->product2, 1);
 

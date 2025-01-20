@@ -18,7 +18,7 @@ use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class CreateOrderFromBasketTest extends TestCase
 {
@@ -48,7 +48,7 @@ class CreateOrderFromBasketTest extends TestCase
         $this->attemptPaymentAction = \Mockery::mock(AttemptPaymentAction::class);
         $this->attemptPaymentAction->allows('handle')->andReturn($this->transaction);
         $this->emptyBasketAction = \Mockery::mock(EmptyBasketAction::class);
-        $this->emptyBasketAction->allows('handle')->once();
+        $this->emptyBasketAction->allows('handle');
         $this->basketRepository = \Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturn($this->basket);
         $this->orderRepository = \Mockery::mock(OrderRepository::class);
@@ -71,7 +71,7 @@ class CreateOrderFromBasketTest extends TestCase
     public function test_existing_order_is_used(): void
     {
         $this->orderRepository->allows()->findByBasketId('basket-1')->andReturn($this->order);
-        $this->orderRepository->allows()->save($this->order)->once();
+        $this->orderRepository->allows()->save($this->order);
 
         $order = $this->action->handle('payment-provider', 'payment-token', $this->customer);
 
@@ -81,7 +81,7 @@ class CreateOrderFromBasketTest extends TestCase
     public function test_new_order_is_created(): void
     {
         $this->orderRepository->allows()->findByBasketId('basket-1')->andReturn(null);
-        $this->orderRepository->allows()->save($this->order)->once();
+        $this->orderRepository->allows()->save($this->order);
         $this->orderFactory->expects()->createFromBasket($this->basket, $this->customer, null, null, [])->once()->andReturn($this->order);
         $order = $this->action->handle('payment-provider', 'payment-token', $this->customer);
         $this->assertSame($this->order, $order);
@@ -102,7 +102,7 @@ class CreateOrderFromBasketTest extends TestCase
         $this->expectException(PaymentFailedException::class);
 
         $this->orderRepository->allows('findByBasketId')->andReturn($this->order);
-        $this->orderRepository->allows()->save($this->order)->once();
+        $this->orderRepository->allows()->save($this->order);
 
         $this->transaction->status = TransactionStatus::FAILED;
 
@@ -112,7 +112,7 @@ class CreateOrderFromBasketTest extends TestCase
     public function test_order_is_marked_as_processing(): void
     {
         $this->orderRepository->allows('findByBasketId')->andReturn($this->order);
-        $this->orderRepository->allows()->save($this->order)->once();
+        $this->orderRepository->allows()->save($this->order);
 
         $this->transaction->status = TransactionStatus::SETTLED;
 

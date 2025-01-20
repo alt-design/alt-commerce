@@ -4,8 +4,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\RuleEngine\Rules\BasketSubTotalConstraintRule;
-
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 final class BasketSubTotalConstraintRuleTest extends TestCase
 {

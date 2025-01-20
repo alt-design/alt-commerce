@@ -7,7 +7,7 @@ use AltDesign\AltCommerce\RuleEngine\Rules\BasketHasProductRule;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class BasketHasProductRuleTest extends TestCase
 {

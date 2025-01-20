@@ -8,7 +8,7 @@ use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Tests\Support\AddressFactory;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class FlatRateShippingProviderTest extends TestCase
 {

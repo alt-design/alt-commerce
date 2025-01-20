@@ -4,7 +4,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\RuleEngine\Rules\ShippingCountryConstraintRule;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class ShippingCountryConstraintRuleTest extends TestCase
 {

@@ -7,7 +7,7 @@ use AltDesign\AltCommerce\Commerce\Payment\PaymentProviderRepositoryFactory;
 use AltDesign\AltCommerce\Commerce\Settings\Settings;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class PaymentProviderRepositoryFactoryTest extends TestCase
 {

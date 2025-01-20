@@ -9,8 +9,7 @@ use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\PaymentProvider;
 use AltDesign\AltCommerce\Contracts\PaymentProviderRepository;
 use Mockery;
-use Mockery\Mock;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class AttemptPaymentActionTest extends TestCase
 {

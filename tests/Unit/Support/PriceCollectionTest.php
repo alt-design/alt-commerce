@@ -4,7 +4,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\Support;
 
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class PriceCollectionTest extends TestCase
 {

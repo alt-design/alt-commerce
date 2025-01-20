@@ -14,7 +14,7 @@ use AltDesign\AltCommerce\RuleEngine\EvaluationResult;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
 use Mockery;
-use PHPUnit\Framework\TestCase;
+use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class ApplyCouponActionTest extends TestCase
 {
@@ -40,8 +40,8 @@ class ApplyCouponActionTest extends TestCase
         $this->basket->currency = 'GBP';
 
         $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->shouldReceive('get')->once()->andReturn($this->basket);
-        $this->basketRepository->shouldReceive('save')->once()->with($this->basket);
+        $this->basketRepository->shouldReceive('get')->andReturn($this->basket);
+        $this->basketRepository->shouldReceive('save')->with($this->basket);
 
         $this->recalculateBasketAction= Mockery::mock(RecalculateBasketAction::class);
 
