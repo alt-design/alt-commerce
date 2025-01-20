@@ -5,7 +5,7 @@ namespace AltDesign\AltCommerce\RuleEngine\Rules;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use Carbon\Carbon;
 
-class BasketDoesNotHaveProduct extends BaseRule
+class BasketDoesNotHaveProductRule extends BaseRule
 {
     /**
      * @param array<string> $productIds

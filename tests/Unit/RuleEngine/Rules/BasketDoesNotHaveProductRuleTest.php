@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
-use AltDesign\AltCommerce\RuleEngine\Rules\BasketDoesNotHaveProduct;
+use AltDesign\AltCommerce\RuleEngine\Rules\BasketDoesNotHaveProductRule;
 use AltDesign\AltCommerce\Support\Price;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
@@ -31,13 +31,13 @@ class BasketDoesNotHaveProductRuleTest extends TestCase
 
     public function test_passes(): void
     {
-        $rule = new BasketDoesNotHaveProduct([12345]);
+        $rule = new BasketDoesNotHaveProductRule([12345]);
         $this->assertTrue($rule->evaluate(['basket' => $this->basket])->result);
     }
 
     public function test_fails(): void
     {
-        $rule = new BasketDoesNotHaveProduct([54321]);
+        $rule = new BasketDoesNotHaveProductRule([54321]);
         $this->assertFalse($rule->evaluate(['basket' => $this->basket])->result);
     }
 }
