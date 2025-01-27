@@ -60,11 +60,6 @@ class RecurrentBillingSchemaTest extends TestCase
             ]
         );
 
-        $this->assertTrue($schema->hasRange('GBP'));
-        $this->assertTrue($schema->hasRange('USD'));
-        $this->assertTrue($schema->hasRange('EUR'));
-        $this->assertFalse($schema->hasRange('AUD'));
-
         $this->assertEquals(1000, $schema->getAmount('GBP', ['plan' => '1-month']));
         $this->assertEquals(1500, $schema->getAmount( 'USD', ['plan' =>  '1-month']));
         $this->assertEquals(1300, $schema->getAmount( 'EUR', ['plan' => '1-month']));
@@ -83,22 +78,21 @@ class RecurrentBillingSchemaTest extends TestCase
         $this->assertEquals('3:year', (string)$schema->getBillingPlan('GBP', ['plan' => '3-year'])->billingInterval);
         $this->assertEquals('5:year', (string)$schema->getBillingPlan('AUD', ['plan' => '5-year'])->billingInterval);
 
-
         $this->assertEquals('1:month', $schema->minimumBillingInterval('GBP'));
-        $this->assertEquals(690, $schema->cheapest('GBP'));
-        $this->assertEquals(1000, $schema->mostExpensive('GBP'));
+        $this->assertEquals('3-year', $schema->cheapest('GBP')->id);
+        $this->assertEquals('1-month', $schema->mostExpensive('GBP')->id);
         $this->assertEquals('1:month', $schema->minimumBillingInterval('USD'));
-        $this->assertEquals(1232, $schema->cheapest('USD'));
-        $this->assertEquals(1500, $schema->mostExpensive('USD'));
+        $this->assertEquals('1-year', $schema->cheapest('USD')->id);
+        $this->assertEquals('1-month', $schema->mostExpensive('USD')->id);
         $this->assertEquals('1:month', $schema->minimumBillingInterval('EUR'));
-        $this->assertEquals(986, $schema->cheapest('EUR'));
-        $this->assertEquals(1300, $schema->mostExpensive('EUR'));
+        $this->assertEquals('1-year', $schema->cheapest('EUR')->id);
+        $this->assertEquals('1-month', $schema->mostExpensive('EUR')->id);
         $this->assertEquals('5:year', $schema->minimumBillingInterval('AUD'));
-        $this->assertEquals(100000, $schema->cheapest('AUD'));
-        $this->assertEquals(100000, $schema->mostExpensive('AUD'));
-        $this->assertFalse($schema->hasRange('AUD'));
-    
+        $this->assertEquals('5-year', $schema->cheapest('AUD')->id);
+        $this->assertEquals('5-year', $schema->mostExpensive('AUD')->id);
+
     }
+
 
     public function test_currency_support()
     {
@@ -126,5 +120,42 @@ class RecurrentBillingSchemaTest extends TestCase
         $this->assertTrue($schema->isCurrencySupported('USd'));
         $this->assertTrue($schema->isCurrencySupported('EUR'));
         $this->assertFalse($schema->isCurrencySupported('AUD'));
+    }
+
+    public function test_get_supported_plans()
+    {
+
+        $plan1 = new BillingPlan(
+            id: 'plan-1',
+            prices: new PriceCollection([
+                new Money(1000, 'GBP'),
+            ]),
+            billingInterval: new Duration(1, DurationUnit::MONTH)
+        );
+
+        $plan2 = new BillingPlan(
+            id: 'plan-2',
+            prices: new PriceCollection([
+                new Money(1000, 'GBP'),
+                new Money(1000, 'EUR')
+            ]),
+            billingInterval: new Duration(1, DurationUnit::MONTH)
+        );
+
+        $plan3 = new BillingPlan(
+            id: 'plan-3',
+            prices: new PriceCollection([
+                new Money(1000, 'USD')
+            ]),
+            billingInterval: new Duration(1, DurationUnit::MONTH)
+        );
+
+        $schema = new RecurrentBillingSchema(plans: [$plan1, $plan2, $plan3]);
+
+        $this->assertEquals([$plan1, $plan2], $schema->getSupportedPlans('GBP'));
+        $this->assertEquals([$plan2], $schema->getSupportedPlans('EUR'));
+        $this->assertEquals([$plan3], $schema->getSupportedPlans('USD'));
+
+
     }
 }

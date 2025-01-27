@@ -16,4 +16,15 @@ class BillingPlan
     {
 
     }
+
+    public function relativePrice(string $currency, Duration $interval): int
+    {
+        $amount = $this->prices->getAmount($currency);
+        if ((string)$this->billingInterval === (string)$interval) {
+            return $amount;
+        }
+
+        $pricePerDay = $amount / $this->billingInterval->days();
+        return (int)($pricePerDay * $interval->days());
+    }
 }

@@ -62,72 +62,50 @@ class RecurrentBillingSchema implements PricingSchema
         throw new BillingPlanNotFound('Billing plan "' . $planId . '" not found.');
     }
 
+    /**
+     * @param string $currency
+     * @return BillingPlan[]
+     */
+    public function getSupportedPlans(string $currency): array
+    {
+        return array_values(array_filter($this->plans, fn(BillingPlan $plan) => $plan->prices->isCurrencySupported($currency)));
+    }
+
     public function minimumBillingInterval(string $currency): Duration
     {
-
-        $billingIntervals = array_map(
-            fn(BillingPlan $plan) => $plan->billingInterval,
-            array_filter(
-                $this->plans, fn(BillingPlan $plan) => $plan->prices->isCurrencySupported($currency)
-            )
-        );
+        $billingIntervals = array_map(fn(BillingPlan $plan) => $plan->billingInterval, $this->getSupportedPlans($currency));
 
         usort($billingIntervals, fn(Duration $a, Duration $b) => $a->days() <=> $b->days());
 
-        return $billingIntervals[0] ?? throw new \Exception('Unable to get minimum billing period');
+        return $billingIntervals[0] ?? throw new BillingPlanNotFound('Unable to get minimum billing period');
     }
 
-    public function cheapest(string $currency): int
+    public function cheapest(string $currency): BillingPlan
     {
-        return $this->pricingRange($currency)['min'];
+        return $this->sortByRelativePrice($currency)[0] ?? throw new \Exception('Unable to determine cheapest billing plan');
     }
 
-    public function mostExpensive(string $currency): int
+    public function mostExpensive(string $currency): BillingPlan
     {
-        return $this->pricingRange($currency)['max'];
-    }
-
-    public function hasRange(string $currency): bool
-    {
-        return $this->cheapest($currency) !== $this->mostExpensive($currency);
-    }
-
-    /**
-     * @param string $currency
-     * @return array{min: int, max: int}
-     * @throws \AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException
-     */
-    protected function pricingRange(string $currency): array
-    {
-        $minimumInterval = $this->minimumBillingInterval($currency);
-        $results = [
-            'min' => 0,
-            'max' => 0,
-        ];
-
-        foreach ($this->plans as $plan) {
-            if (!$plan->prices->isCurrencySupported($currency)) {
-                continue;
-            }
-
-            $amount = Duration::convert(
-                amount: $plan->prices->getAmount($currency),
-                from: $plan->billingInterval,
-                to: $minimumInterval
-            );
-
-            if (empty($results['min']) || $amount < $results['min']) {
-                $results['min'] = $amount;
-            }
-
-            if (empty($results['max']) || $amount > $results['max']) {
-                $results['max'] = $amount;
-            }
+        $results = $this->sortByRelativePrice($currency);
+        if ($end = end($results)) {
+            return $end;
         }
 
-        return $results;
+        throw new \Exception('Unable to determine most expensive billing plan');
     }
 
+    protected function sortByRelativePrice(string $currency): array
+    {
 
+        $minimumBillingInterval = $this->minimumBillingInterval($currency);
+        $supported = $this->getSupportedPlans($currency);
+        usort(
+            $supported,
+            fn(BillingPlan $a, BillingPlan $b) =>
+                $a->relativePrice($currency, $minimumBillingInterval) <=> $b->relativePrice($currency, $minimumBillingInterval)
+        );
 
+        return $supported;
+    }
 }
