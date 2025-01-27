@@ -95,6 +95,11 @@ class RecurrentBillingSchema implements PricingSchema
         throw new \Exception('Unable to determine most expensive billing plan');
     }
 
+    /**
+     * @param string $currency
+     * @return BillingPlan[]
+     * @throws BillingPlanNotFound
+     */
     protected function sortByRelativePrice(string $currency): array
     {
 
