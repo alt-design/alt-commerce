@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Contracts;
 
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
-use AltDesign\AltCommerce\Enum\ProductType;
 use AltDesign\AltCommerce\Support\PriceCollection;
 
 interface Product
@@ -14,7 +13,7 @@ interface Product
 
     public function prices(): PriceCollection;
 
-    public function type(): ProductType;
+    public function price(): PricingSchema;
 
     public function taxable(): bool;
 

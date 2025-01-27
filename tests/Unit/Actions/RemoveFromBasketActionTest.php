@@ -5,8 +5,13 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveFromBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Enum\DurationUnit;
+use AltDesign\AltCommerce\Support\Duration;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
@@ -43,21 +48,42 @@ class RemoveFromBasketActionTest extends TestCase
 
     public function test_remove_product_from_basket()
     {
-        $product = $this->createProductMock(
-            id: 'product-id',
-            priceCollection: new PriceCollection([
-                new Price(200, 'GBP')
-            ])
+        $product1 = $this->createProduct(
+            id: 'product-1',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(200, 'GBP')
+                ])
+            )
         );
 
-        $this->addProductToBasket($product, 2);
+        $product2 = $this->createProduct(
+            id: 'product-2',
+            priceSchema: new RecurrentBillingSchema(
+                plans: [
+                    new BillingPlan(
+                        id: '1-month',
+                        prices: new PriceCollection([
+                            new Money(200, 'GBP')
+                        ]),
+                        billingInterval: new Duration(1, DurationUnit::MONTH)
+                    )
+                ]
+            )
+        );
+
+        $this->addLineItemToBasket($product1, 2);
+        $this->addBillingItemToBasket($product2, '1-month');
 
         $this->recalculateBasketAction->allows('handle')->once();
         $this->basketRepository->allows('save')->once();
 
-        $this->action->handle('product-id');
+        $this->action->handle('product-1', 'product-2');
 
         $this->assertEmpty($this->basket->lineItems);
+        $this->assertEmpty($this->basket->billingItems);
 
     }
+
+
 }

@@ -2,13 +2,13 @@
 
 namespace AltDesign\AltCommerce\Support;
 
-final class Price
+final class Money
 {
     public readonly string $currency;
 
     public function __construct(
         public readonly int $amount,
-        string $currency,
+        string $currency
     ){
         $this->currency = strtoupper($currency);
     }

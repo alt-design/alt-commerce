@@ -4,7 +4,6 @@ namespace AltDesign\AltCommerce\Actions;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
-use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;

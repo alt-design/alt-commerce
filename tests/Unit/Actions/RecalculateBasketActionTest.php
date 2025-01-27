@@ -8,13 +8,14 @@ use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
@@ -45,20 +46,24 @@ class RecalculateBasketActionTest extends TestCase
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturns($this->basket);
 
-        $this->product1 = $this->createProductMock(
+        $this->product1 = $this->createProduct(
             id: 'product-1',
             name: 'Test Product 1',
-            priceCollection: new PriceCollection([
-                new Price(100, 'GBP'),
-            ])
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'GBP'),
+                ])
+            )
         );
 
-        $this->product2 = $this->createProductMock(
+        $this->product2 = $this->createProduct(
             id: 'product-2',
             name: 'Test Product 2',
-            priceCollection: new PriceCollection([
-                new Price(250, 'GBP'),
-            ])
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(250, 'GBP'),
+                ])
+            )
         );
 
         $this->productRepository = Mockery::mock(ProductRepository::class);
@@ -76,8 +81,8 @@ class RecalculateBasketActionTest extends TestCase
     public function test_basic_product_with_no_tax_rules(): void
     {
 
-        $this->addProductToBasket($this->product1, 2);
-        $this->addProductToBasket($this->product2, 5);
+        $this->addLineItemToBasket($this->product1, 2);
+        $this->addLineItemToBasket($this->product2, 5);
 
         $this->basketRepository->allows()->save($this->basket);
 
@@ -120,8 +125,8 @@ class RecalculateBasketActionTest extends TestCase
             )
         ]);
 
-        $this->addProductToBasket($this->product1, 2); //100 = 200  * 0.2 = 40
-        $this->addProductToBasket($this->product2, 5); // 250 = 1250 * 0.1 = 125
+        $this->addLineItemToBasket($this->product1, 2); //100 = 200  * 0.2 = 40
+        $this->addLineItemToBasket($this->product2, 5); // 250 = 1250 * 0.1 = 125
 
         $this->basketRepository->allows()->save($this->basket);
 
@@ -151,11 +156,16 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_fixed_discount_coupon_code(): void
     {
-        $this->product1->allows()->prices()->andReturns(new PriceCollection([
-            new Price(12000, 'GBP'),
-        ]));
 
-        $this->addProductToBasket($this->product1, 5);
+        $this->product1->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(12000, 'GBP'),
+                ])
+            )
+        );
+
+        $this->addLineItemToBasket($this->product1, 5);
 
         $this->basket->coupons = [
             new CouponItem(
@@ -187,12 +197,16 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_adding_percentage_discount_coupon_code(): void
     {
-        $this->product1->allows()->prices()->andReturns(new PriceCollection([
-            new Price(12000, 'GBP'),
-        ]));
 
-        $this->addProductToBasket($this->product1, 5);
+        $this->product1->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(12000, 'GBP'),
+                ])
+            )
+        );
 
+        $this->addLineItemToBasket($this->product1, 5);
 
         $this->basket->coupons = [
             new CouponItem(
@@ -225,13 +239,15 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_removing_coupon_code(): void
     {
+        $this->product1->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(12000, 'GBP'),
+                ])
+            )
+        );
 
-        $this->product1->allows()->prices()->andReturns(new PriceCollection([
-            new Price(12000, 'GBP'),
-        ]));
-
-        $this->addProductToBasket($this->product1, 5);
-
+        $this->addLineItemToBasket($this->product1, 5);
 
         $coupon = Mockery::mock(Coupon::class);
         $coupon->allows()->code()->andReturn('test-code');
@@ -261,10 +277,10 @@ class RecalculateBasketActionTest extends TestCase
     {
 
         $this->product1->allows()->prices()->andReturns(new PriceCollection([
-            new Price(12000, 'GBP'),
+            new Money(12000, 'GBP'),
         ]));
 
-        $this->addProductToBasket($this->product1, 5);
+        $this->addLineItemToBasket($this->product1, 5);
 
         $this->basketRepository->allows()->save($this->basket);
 
@@ -297,7 +313,7 @@ class RecalculateBasketActionTest extends TestCase
         ]);
         $this->product1->allows()->taxable()->andReturns(true);
 
-        $this->addProductToBasket($this->product1, 1);
+        $this->addLineItemToBasket($this->product1, 1);
 
         $this->basketRepository->allows()->save($this->basket);
 
@@ -308,7 +324,5 @@ class RecalculateBasketActionTest extends TestCase
 
 
     }
-
-
 
 }

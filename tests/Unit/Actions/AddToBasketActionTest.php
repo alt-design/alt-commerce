@@ -3,22 +3,28 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\AddToBasketAction;
+use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
+use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Enum\ProductType;
+use AltDesign\AltCommerce\Enum\DurationUnit;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Duration;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 use Mockery;
 
 class AddToBasketActionTest extends TestCase
 {
+    use CommerceHelper;
+
     protected $basket;
     protected $basketRepository;
     protected $product;
@@ -33,16 +39,14 @@ class AddToBasketActionTest extends TestCase
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturn($this->basket);
 
-        $this->product = Mockery::mock(Product::class);
-        $this->product->allows()->id()->andReturn('product-id');
-        $this->product->allows()->type()->andReturn(ProductType::OTHER);
-        $this->product->allows()->taxable()->andReturn(false);
-        $this->product->allows()->taxRules()->andReturn([]);
-        $this->product->allows()->data()->andReturn([]);
-        $this->product->allows()->name()->andReturn('Test Product');
-        $this->product->allows()->prices()->andReturn(new PriceCollection([
-            new Price(100, 'USD'),
-        ]));
+        $this->product = $this->createProduct(
+            id: 'product-id',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'USD'),
+                ])
+            )
+        );
 
         $this->productRepository = Mockery::mock(ProductRepository::class);
         $this->productRepository->allows()->find('product-id')->andReturn($this->product);
@@ -64,7 +68,6 @@ class AddToBasketActionTest extends TestCase
         $this->assertEquals(2, $this->basket->lineItems[0]->quantity);
         $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
         $this->assertFalse( $this->basket->lineItems[0]->taxable);
-        $this->assertEquals(ProductType::OTHER, $this->basket->lineItems[0]->productType);
     }
 
     public function test_updates_existing_product_quantity()
@@ -98,6 +101,39 @@ class AddToBasketActionTest extends TestCase
 
         $action = new AddToBasketAction($this->basketRepository, $this->productRepository, Mockery::mock(RecalculateBasketAction::class));
         $action->handle('product-id', 1);
+    }
+
+    public function test_adds_product_with_recurrent_billing()
+    {
+        $this->product = $this->createProduct(
+            id: 'product-recurrent-billing',
+            priceSchema: new RecurrentBillingSchema(
+                plans: [
+                    new BillingPlan(
+                        id: '1-month',
+                        prices: new PriceCollection([
+                            new Money(100, 'USD'),
+                        ]),
+                        billingInterval: new Duration(1, DurationUnit::MONTH)
+                    )
+                ]
+            )
+        );
+
+        $this->productRepository->allows()->find('product-recurrent-billing')->andReturn($this->product);
+
+        $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
+        $recalculateBasketActionMock->allows('handle');
+
+        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, $recalculateBasketActionMock);
+        $action->handle('product-recurrent-billing', 1, ['plan' => '1-month']);
+
+        $this->assertCount(0, $this->basket->lineItems);
+        $this->assertCount(1, $this->basket->billingItems);
+        $this->assertEquals('product-recurrent-billing', $this->basket->billingItems[0]->productId);
+        $this->assertEquals('1-month', $this->basket->billingItems[0]->planId);
+        $this->assertEquals(100, $this->basket->billingItems[0]->amount);
+        $this->assertEquals('1:month', (string)$this->basket->billingItems[0]->billingInterval);
 
     }
 

@@ -11,6 +11,7 @@ class Basket
      * @param DeliveryItem[] $deliveryItems
      * @param FeeItem[] $feeItems
      * @param LineItem[] $lineItems
+     * @param BillingItem[] $billingItems
      * @param CouponItem[] $coupons
      * @param TaxItem[] $taxItems
      * @param DiscountItem[] $discountItems
@@ -22,6 +23,7 @@ class Basket
         public array $discountItems = [],
         public array $taxItems = [],
         public array $lineItems = [],
+        public array $billingItems = [],
         public array $deliveryItems = [],
         public array $feeItems = [],
         public array $coupons = [],

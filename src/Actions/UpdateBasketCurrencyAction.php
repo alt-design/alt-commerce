@@ -33,16 +33,29 @@ class UpdateBasketCurrencyAction
             throw new CurrencyNotSupportedException("Currency $currency is not supported");
         }
 
-
-        // removed line items that do not support new currency
+        // remove line items that do not support new currency
         foreach ($basket->lineItems as $key => $item) {
             $product = $this->productRepository->find($item->productId);
-            if ($product && $product->prices()->supports($currency)) {
-                $basket->lineItems[$key]->subTotal = $product->prices()->currency($currency);
+            if ($product && $product->price()->isCurrencySupported($currency)) {
+                $basket->lineItems[$key]->subTotal = $product->price()->getAmount($currency, ['quantity' => $item->quantity]);
                 continue;
             }
 
             unset($basket->lineItems[$key]);
+        }
+
+        // remove billing items that do not support currency
+        foreach ($basket->billingItems as $key => $item) {
+            $product = $this->productRepository->find($item->productId);
+            if ($product && $product->price()->hasBillingPlan()) {
+                $billingPlan = $product->price()->getBillingPlan($currency, ['plan' => $item->planId]);
+                if ($billingPlan->prices->isCurrencySupported($currency)) {
+                    $basket->billingItems[$key]->amount = $billingPlan->prices->getAmount($currency);
+                    continue;
+                }
+            }
+
+            unset($basket->billingItems[$key]);
         }
 
         $basket->currency = $currency;

@@ -3,8 +3,9 @@
 namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\RuleEngine\Rules\BasketHasProductRule;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
@@ -25,8 +26,15 @@ class BasketHasProductRuleTest extends TestCase
             subTotal: 0
         );
 
-        $this->product = $this->createProductMock(54321, priceCollection: new PriceCollection([new Price(10000, 'GBP')]));
-        $this->addProductToBasket($this->product, 1);
+        $this->product = $this->createProduct(
+            id: 54321,
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(10000, 'GBP')
+                ])
+            )
+        );
+        $this->addLineItemToBasket($this->product, 1);
     }
 
     public function test_passes(): void

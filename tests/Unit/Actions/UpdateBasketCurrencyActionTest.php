@@ -5,12 +5,13 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketCurrencyAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Settings\Settings;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
@@ -35,6 +36,7 @@ class UpdateBasketCurrencyActionTest extends TestCase
         $this->basket = Mockery::mock(Basket::class);
         $this->basket->currency = 'GBP';
         $this->basket->lineItems = [];
+        $this->basket->billingItems = [];
 
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturn($this->basket);
@@ -45,22 +47,26 @@ class UpdateBasketCurrencyActionTest extends TestCase
         $this->settings->supportedCurrencies = ['GBP', 'USD', 'EUR'];$this->settingsRepository = Mockery::mock(SettingsRepository::class);
         $this->settingsRepository->allows()->get()->andReturn($this->settings);
 
-        $this->product1 = $this->createProductMock(
+        $this->product1 = $this->createProduct(
             id: 'product-1',
             name: 'Test Product 1',
-            priceCollection: new PriceCollection([
-                new Price(100, 'GBP'),
-                new Price(200, 'USD'),
-            ])
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'GBP'),
+                    new Money(200, 'USD'),
+                ])
+            )
         );
 
-        $this->product2 = $this->createProductMock(
+        $this->product2 = $this->createProduct(
             id: 'product-2',
             name: 'Test Product 2',
-            priceCollection: new PriceCollection([
-                new Price(100, 'GBP'),
-                new Price(150, 'EUR'),
-            ])
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'GBP'),
+                    new Money(150, 'EUR'),
+                ])
+            )
         );
 
         $this->productRepository = Mockery::mock(ProductRepository::class);
@@ -85,8 +91,8 @@ class UpdateBasketCurrencyActionTest extends TestCase
     public function test_items_get_removed_if_price_is_not_available(): void
     {
         $this->recalculateBasketAction->allows()->handle()->once();
-        $lineItem1 = $this->addProductToBasket($this->product1, 1);
-        $this->addProductToBasket($this->product2, 1);
+        $lineItem1 = $this->addLineItemToBasket($this->product1, 1);
+        $this->addLineItemToBasket($this->product2, 1);
 
         $this->action->handle('USD');
         $this->assertEquals([$lineItem1], $this->basket->lineItems);

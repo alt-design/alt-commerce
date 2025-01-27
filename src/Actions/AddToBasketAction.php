@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
@@ -44,21 +45,33 @@ class AddToBasketAction
                 throw new ProductNotFoundException($productId);
             }
 
-            if (!$product->prices()->supports($basket->currency)) {
+            if (!$product->price()->isCurrencySupported($basket->currency)) {
                 throw new CurrencyNotSupportedException();
             }
 
-            $basket->lineItems[] = new LineItem(
-                productId: $product->id(),
-                productName: $product->name(),
-                productType: $product->type(),
-                taxable: $product->taxable(),
-                taxRules: $product->taxRules(),
-                options: $options,
-                productData: $product->data(),
-                quantity: $quantity,
-                subTotal: $product->prices()->currency($basket->currency),
-            );
+            if ($product->price()->hasBillingPlan()) {
+                $billingPlan = $product->price()->getBillingPlan($basket->currency, ['plan' => $options['plan'] ?? null]);
+                $basket->billingItems[] = new BillingItem(
+                    productId: $product->id(),
+                    productName: $product->name(),
+                    planId: $billingPlan->id,
+                    amount: $billingPlan->prices->getAmount($basket->currency),
+                    billingInterval: $billingPlan->billingInterval,
+                    trialPeriod: $billingPlan->trialPeriod,
+                );
+
+            } else {
+                $basket->lineItems[] = new LineItem(
+                    productId: $product->id(),
+                    productName: $product->name(),
+                    taxable: $product->taxable(),
+                    taxRules: $product->taxRules(),
+                    options: $options,
+                    productData: $product->data(),
+                    quantity: $quantity,
+                    subTotal: $product->price()->getAmount($basket->currency, ['quantity' => $quantity])
+                );
+            }
         }
 
         $this->recalculateBasketAction->handle();

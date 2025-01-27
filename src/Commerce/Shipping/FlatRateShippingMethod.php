@@ -6,15 +6,15 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Contracts\ShippingMethod;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 
 class FlatRateShippingMethod implements ShippingMethod
 {
 
     public function __construct(
-        protected string $id,
-        protected string $name,
-        protected Price $price,
+        protected string    $id,
+        protected string    $name,
+        protected Money     $price,
         protected RuleGroup $ruleGroup,
     ) {
 

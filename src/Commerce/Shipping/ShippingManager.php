@@ -5,7 +5,7 @@ use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ShippingMethodRepository;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 
 class ShippingManager
 {
@@ -48,7 +48,7 @@ class ShippingManager
             $rates[] = new ShippingRate(
                 id: $method->id(),
                 name: $method->name(),
-                price: new Price($method->calculatePrice($basket, $shippingAddress), $method->currency()),
+                price: new Money($method->calculatePrice($basket, $shippingAddress), $method->currency()),
             );
 
         }

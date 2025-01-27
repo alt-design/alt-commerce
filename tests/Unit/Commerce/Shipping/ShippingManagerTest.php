@@ -13,7 +13,7 @@ use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
 use AltDesign\AltCommerce\RuleEngine\Rules\BasketSubTotalConstraintRule;
 use AltDesign\AltCommerce\RuleEngine\Rules\ShippingCountryConstraintRule;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Tests\Support\AddressFactory;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
@@ -49,7 +49,7 @@ class ShippingManagerTest extends TestCase
         $shippingMethod1 = new FlatRateShippingMethod(
             id: 'free-shipping-over-50-gbp',
             name: 'Free Postage',
-            price: new Price(0, 'GBP'),
+            price: new Money(0, 'GBP'),
             ruleGroup: new RuleGroup(
                 rules: [
                     new BasketSubTotalConstraintRule(currency: 'GBP', min: 5000),
@@ -62,7 +62,7 @@ class ShippingManagerTest extends TestCase
         $shippingMethod2 = new FlatRateShippingMethod(
             id: 'priority-shipping-gbp',
             name: 'Priority Shipping',
-            price: new Price(2000, 'GBP'),
+            price: new Money(2000, 'GBP'),
             ruleGroup: new RuleGroup(
                 rules: [
                     new ShippingCountryConstraintRule(countryCodes: ['GB'])
@@ -74,7 +74,7 @@ class ShippingManagerTest extends TestCase
         $shippingMethod3 = new FlatRateShippingMethod(
             id: 'free-shipping-over-50-usd',
             name: 'Free Shipping',
-            price: new Price(0, 'USD'),
+            price: new Money(0, 'USD'),
             ruleGroup: new RuleGroup(
                 rules: [
                     new BasketSubTotalConstraintRule(currency: 'USD', min: 5000),

@@ -2,41 +2,56 @@
 
 namespace AltDesign\AltCommerce\Tests\Support;
 
+use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
+use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
-use AltDesign\AltCommerce\Enum\ProductType;
-use AltDesign\AltCommerce\Support\PriceCollection;
 use Mockery;
 
 trait CommerceHelper
 {
-    protected function createProductMock($id, $name = null, PriceCollection $priceCollection = null)
+    protected function createProduct($id, $name = null, ?PricingSchema $priceSchema = null)
     {
         $product = Mockery::mock(Product::class);
         $product->allows()->id()->andReturn($id)->byDefault();
-        $product->allows()->type()->andReturn(ProductType::OTHER)->byDefault();
         $product->allows()->taxable()->andReturn(false)->byDefault();
         $product->allows()->taxRules()->andReturn([])->byDefault();
         $product->allows()->data()->andReturn([])->byDefault();
         $product->allows()->name()->andReturn($name ?? 'Test Product')->byDefault();
-        $product->allows()->prices()->andReturn($priceCollection ?? new PriceCollection())->byDefault();
+        if ($priceSchema) {
+            $product->allows()->price()->andReturn($priceSchema)->byDefault();
+        }
 
         return $product;
     }
 
-    protected function addProductToBasket($product, $quantity): LineItem
+    protected function addLineItemToBasket($product, $quantity): LineItem
     {
         $lineItem = new LineItem(
             productId: $product->id(),
             productName: $product->name(),
-            productType: $product->type(),
             taxable: $product->taxable(),
             taxRules: $product->taxRules(),
             productData: $product->data(),
             quantity: $quantity,
-            subTotal: $product->prices()->currency($this->basket->currency),
+            subTotal: $product->price()->getAmount($this->basket->currency, ['quantity' => $quantity]),
         );
         $this->basket->lineItems[] = $lineItem;
         return $lineItem;
+    }
+
+    protected function addBillingItemToBasket($product, $planId): BillingItem
+    {
+        $billingPlan = $product->price()->getBillingPlan($this->basket->currency, ['plan' => $planId]);
+
+        $billingItem = new BillingItem(
+            productId: $product->id(),
+            productName: $product->name(),
+            planId: $billingPlan->id,
+            amount: $billingPlan->prices->getAmount($this->basket->currency, ['plan' => $planId]),
+            billingInterval: $billingPlan->billingInterval,
+        );
+        $this->basket->billingItems[] = $billingItem;
+        return $billingItem;
     }
 }

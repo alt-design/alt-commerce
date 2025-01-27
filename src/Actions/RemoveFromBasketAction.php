@@ -15,15 +15,22 @@ class RemoveFromBasketAction
 
     }
 
-    public function handle(string $productId): void
+    public function handle(string ...$productIds): void
     {
         $basket = $this->basketRepository->get();
-        foreach ($basket->lineItems as $key => $item) {
-            if ($item->productId === $productId ) {
-                unset($basket->lineItems[$key]);
+        foreach ($productIds as $productId) {
+            foreach ($basket->lineItems as $key => $item) {
+                if ($item->productId === $productId ) {
+                    unset($basket->lineItems[$key]);
+                }
+            }
+
+            foreach ($basket->billingItems as $key => $item) {
+                if ($item->productId === $productId) {
+                    unset($basket->billingItems[$key]);
+                }
             }
         }
-
         $this->basketRepository->save($basket);
         $this->recalculateBasketAction->handle();
     }

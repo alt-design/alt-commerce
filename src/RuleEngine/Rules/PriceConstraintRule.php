@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\RuleEngine\Rules;
 
 
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 
 class PriceConstraintRule extends BaseRule
 {
@@ -35,7 +35,7 @@ class PriceConstraintRule extends BaseRule
         }
     }
 
-    protected function price(): Price
+    protected function price(): Money
     {
         return $this->resolve('price');
     }

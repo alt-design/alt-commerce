@@ -5,9 +5,10 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketQuantityAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
-use AltDesign\AltCommerce\Support\Price;
+use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
@@ -43,13 +44,16 @@ class UpdateBasketQuantityActionTest extends TestCase
 
     public function test_updating_quantity_with_existing_product()
     {
-        $product = $this->createProductMock(
+        $product = $this->createProduct(
             id: 'product-id',
-            priceCollection: new PriceCollection([
-                new Price(200, 'GBP')
-            ])
+            priceSchema: new FixedPriceSchema(
+                prices:
+                new PriceCollection([
+                    new Money(200, 'GBP')
+                ])
+            )
         );
-        $this->addProductToBasket($product, 2);
+        $this->addLineItemToBasket($product, 2);
 
         $this->basketRepository->allows()->save($this->basket);
         $this->recalculateBasketAction->allows('handle')->once();
