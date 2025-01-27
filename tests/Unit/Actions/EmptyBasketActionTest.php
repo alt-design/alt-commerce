@@ -7,6 +7,7 @@ use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use Mockery;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 
 class EmptyBasketActionTest extends TestCase
@@ -23,9 +24,7 @@ class EmptyBasketActionTest extends TestCase
         $this->action = new EmptyBasketAction($this->basketRepository, $this->recalculateBasketAction);
     }
 
-    /**
-     * @doesNotPerformAssertions
-     */
+    #[DoesNotPerformAssertions]
     public function test_clears_basket_and_recalculates_total()
     {
         $this->basketRepository->expects()->delete()->once();
