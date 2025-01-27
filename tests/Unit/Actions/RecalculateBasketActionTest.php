@@ -275,15 +275,8 @@ class RecalculateBasketActionTest extends TestCase
 
     public function test_existing_coupon_codes_get_removed_before_recalculating(): void
     {
-
-        $this->product1->allows()->prices()->andReturns(new PriceCollection([
-            new Money(12000, 'GBP'),
-        ]));
-
         $this->addLineItemToBasket($this->product1, 5);
-
         $this->basketRepository->allows()->save($this->basket);
-
 
         $coupon = Mockery::mock(Coupon::class);
         $coupon->allows()->code()->andReturn('20OFF');

@@ -11,8 +11,6 @@ interface Product
 
     public function name(): string;
 
-    public function prices(): PriceCollection;
-
     public function price(): PricingSchema;
 
     public function taxable(): bool;
