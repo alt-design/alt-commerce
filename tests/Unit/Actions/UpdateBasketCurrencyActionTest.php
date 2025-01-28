@@ -4,10 +4,8 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketCurrencyAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Settings\Settings;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
@@ -21,9 +19,7 @@ class UpdateBasketCurrencyActionTest extends TestCase
 {
     use CommerceHelper;
 
-    protected $basket;
     protected $settings;
-    protected $basketRepository;
     protected $settingsRepository;
     protected $productRepository;
     protected $recalculateBasketAction;
@@ -32,14 +28,7 @@ class UpdateBasketCurrencyActionTest extends TestCase
 
     protected function setUp(): void
     {
-
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->currency = 'GBP';
-        $this->basket->lineItems = [];
-        $this->basket->billingItems = [];
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
+        $this->createBasket();
 
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
 

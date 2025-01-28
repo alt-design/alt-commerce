@@ -2,7 +2,7 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
+
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\RuleEngine\Rules\BasketHasProductRule;
 use AltDesign\AltCommerce\Support\Money;
@@ -14,17 +14,12 @@ class BasketHasProductRuleTest extends TestCase
 {
     use CommerceHelper;
 
-    protected $basket;
     protected $product;
 
     protected function setUp(): void
     {
-        $this->basket = new Basket(
-            id: 'basket-id',
-            currency: 'GBP',
-            countryCode: 'GB',
-            subTotal: 0
-        );
+        $this->createBasket();
+
 
         $this->product = $this->createProduct(
             id: 54321,

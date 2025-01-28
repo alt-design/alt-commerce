@@ -4,9 +4,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketQuantityAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
@@ -16,23 +14,14 @@ use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class UpdateBasketQuantityActionTest extends TestCase
 {
-
     use CommerceHelper;
 
-    protected $basket;
-    protected $basketRepository;
     protected $recalculateBasketAction;
     protected $action;
 
     protected function setUp(): void
     {
-
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->currency = 'GBP';
-        $this->basket->lineItems = [];
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
+        $this->createBasket();
 
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
 

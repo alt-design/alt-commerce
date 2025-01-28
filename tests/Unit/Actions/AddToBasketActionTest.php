@@ -4,12 +4,10 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\AddToBasketAction;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DurationUnit;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
@@ -25,19 +23,12 @@ class AddToBasketActionTest extends TestCase
 {
     use CommerceHelper;
 
-    protected $basket;
-    protected $basketRepository;
     protected $product;
     protected $productRepository;
 
     public function setUp(): void
     {
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->lineItems = [];
-        $this->basket->currency = 'USD';
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
+        $this->createBasket(currency: 'USD');
 
         $this->product = $this->createProduct(
             id: 'product-id',

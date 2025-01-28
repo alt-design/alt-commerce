@@ -3,10 +3,8 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Shipping;
 
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Shipping\FlatRateShippingMethod;
 use AltDesign\AltCommerce\Commerce\Shipping\ShippingManager;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ShippingMethodRepository;
 use AltDesign\AltCommerce\Enum\RuleMatchingType;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
@@ -15,25 +13,22 @@ use AltDesign\AltCommerce\RuleEngine\Rules\BasketSubTotalConstraintRule;
 use AltDesign\AltCommerce\RuleEngine\Rules\ShippingCountryConstraintRule;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Tests\Support\AddressFactory;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class ShippingManagerTest extends TestCase
 {
+    use CommerceHelper;
+
     protected $shippingMethodRepository;
-    protected $basket;
-    protected $basketRepository;
     protected $shippingManager;
 
     protected function setup(): void
     {
+        $this->createBasket();
+
         $this->shippingMethodRepository = Mockery::mock(ShippingMethodRepository::class);
-
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->currency = 'GBP';
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturns($this->basket);
 
         $this->shippingManager = new ShippingManager(
             shippingMethodRepository: $this->shippingMethodRepository,

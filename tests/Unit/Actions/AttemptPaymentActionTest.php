@@ -18,8 +18,6 @@ class AttemptPaymentActionTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->paymentProviderRepository = \Mockery::mock(PaymentProviderRepository::class);
 
         $this->action = new AttemptPaymentAction(

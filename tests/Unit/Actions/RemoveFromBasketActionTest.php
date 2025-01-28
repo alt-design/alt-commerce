@@ -4,11 +4,9 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveFromBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Enum\DurationUnit;
 use AltDesign\AltCommerce\Support\Duration;
 use AltDesign\AltCommerce\Support\Money;
@@ -22,21 +20,12 @@ class RemoveFromBasketActionTest extends TestCase
 
     use CommerceHelper;
 
-    protected $basket;
-    protected $basketRepository;
     protected $recalculateBasketAction;
     protected $action;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->lineItems = [];
-        $this->basket->currency = 'GBP';
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
+        $this->createBasket();
 
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
 

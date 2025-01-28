@@ -22,7 +22,7 @@ class BasketManager
         $this->basket = $basketRepository->get();
     }
 
-    public function find(string $productId): ?LineItem
+    public function find(string $productId): LineItem|BillingItem|null
     {
         return $this->traitFind($this->basket, $productId);
     }

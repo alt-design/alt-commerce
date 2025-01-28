@@ -4,22 +4,21 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\EmptyBasketAction;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\TestCase;
 
 class EmptyBasketActionTest extends TestCase
 {
-    protected $basket;
-    protected $basketRepository;
+    use CommerceHelper;
+
     protected $recalculateBasketAction;
 
     public function setup(): void
     {
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
+        $this->createBasket();
+
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
         $this->action = new EmptyBasketAction($this->basketRepository, $this->recalculateBasketAction);
     }

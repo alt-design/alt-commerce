@@ -2,7 +2,7 @@
 
 namespace AltDesign\AltCommerce\Exceptions;
 
-class BillingPlanNotFound extends \Exception
+class BillingPlanNotFoundException extends \Exception
 {
 
 }

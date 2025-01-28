@@ -4,8 +4,6 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\ApplyCouponAction;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
 use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
@@ -13,35 +11,30 @@ use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 use AltDesign\AltCommerce\RuleEngine\EvaluationResult;
 use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class ApplyCouponActionTest extends TestCase
 {
+    use CommerceHelper;
 
     protected $coupon;
     protected $couponRepository;
-    protected $basket;
-    protected $basketRepository;
     protected $recalculateBasketAction;
     protected $ruleManager;
     protected $action;
 
     protected function setUp(): void
     {
-        parent::setUp();
+        $this->createBasket();
+        $this->basketRepository->shouldReceive('save')->with($this->basket);
 
         $this->coupon = Mockery::mock(Coupon::class);
         $this->coupon->allows()->ruleGroup()->andReturn(new RuleGroup(rules: []));
 
         $this->couponRepository = Mockery::mock(CouponRepository::class);
 
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->currency = 'GBP';
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->shouldReceive('get')->andReturn($this->basket);
-        $this->basketRepository->shouldReceive('save')->with($this->basket);
 
         $this->recalculateBasketAction= Mockery::mock(RecalculateBasketAction::class);
 

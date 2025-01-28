@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\Commerce\Billing;
 
 use AltDesign\AltCommerce\Contracts\PricingSchema;
-use AltDesign\AltCommerce\Exceptions\BillingPlanNotFound;
+use AltDesign\AltCommerce\Exceptions\BillingPlanNotFoundException;
 use AltDesign\AltCommerce\Support\Duration;
 
 class RecurrentBillingSchema implements PricingSchema
@@ -26,7 +26,7 @@ class RecurrentBillingSchema implements PricingSchema
      * @param string $currency
      * @param array<string, mixed> $context
      * @return int
-     * @throws BillingPlanNotFound
+     * @throws BillingPlanNotFoundException
      * @throws \AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException
      */
     public function getAmount(string $currency, array $context = []): int
@@ -49,7 +49,7 @@ class RecurrentBillingSchema implements PricingSchema
      * @param string $currency
      * @param array<string, mixed> $context
      * @return BillingPlan
-     * @throws BillingPlanNotFound
+     * @throws BillingPlanNotFoundException
      */
     public function getBillingPlan(string $currency, array $context = []): BillingPlan
     {
@@ -59,7 +59,7 @@ class RecurrentBillingSchema implements PricingSchema
                 return $plan;
             }
         }
-        throw new BillingPlanNotFound('Billing plan "' . $planId . '" not found.');
+        throw new BillingPlanNotFoundException('Billing plan "' . $planId . '" not found.');
     }
 
     /**
@@ -77,7 +77,7 @@ class RecurrentBillingSchema implements PricingSchema
 
         usort($billingIntervals, fn(Duration $a, Duration $b) => $a->days() <=> $b->days());
 
-        return $billingIntervals[0] ?? throw new BillingPlanNotFound('Unable to get minimum billing period');
+        return $billingIntervals[0] ?? throw new BillingPlanNotFoundException('Unable to get minimum billing period');
     }
 
     public function cheapest(string $currency): BillingPlan
@@ -98,7 +98,7 @@ class RecurrentBillingSchema implements PricingSchema
     /**
      * @param string $currency
      * @return BillingPlan[]
-     * @throws BillingPlanNotFound
+     * @throws BillingPlanNotFoundException
      */
     protected function sortByRelativePrice(string $currency): array
     {

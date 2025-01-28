@@ -3,14 +3,12 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
@@ -26,8 +24,6 @@ class RecalculateBasketActionTest extends TestCase
 
     use CommerceHelper;
 
-    protected $basket;
-    protected $basketRepository;
     protected $productRepository;
     protected $action;
     protected $product1;
@@ -35,16 +31,7 @@ class RecalculateBasketActionTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->basket = new Basket(
-            id: 'basket-id',
-            currency: 'GBP',
-            countryCode: 'GB',
-        );
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturns($this->basket);
+        $this->createBasket( );
 
         $this->product1 = $this->createProduct(
             id: 'product-1',

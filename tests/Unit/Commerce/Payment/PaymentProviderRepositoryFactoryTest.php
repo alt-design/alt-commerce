@@ -20,8 +20,6 @@ class PaymentProviderRepositoryFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->settings = Mockery::mock(Settings::class);
 
         $this->settingsRepository = Mockery::mock(SettingsRepository::class);

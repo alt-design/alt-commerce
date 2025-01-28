@@ -5,29 +5,28 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 use AltDesign\AltCommerce\Actions\AttemptPaymentAction;
 use AltDesign\AltCommerce\Actions\CreateOrderFromBasketAction;
 use AltDesign\AltCommerce\Actions\EmptyBasketAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Order\Order;
 use AltDesign\AltCommerce\Commerce\Order\OrderFactory;
 use AltDesign\AltCommerce\Commerce\Payment\PaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\PaymentRequestFactory;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class CreateOrderFromBasketTest extends TestCase
 {
+    use CommerceHelper;
+
     protected $order;
-    protected $basket;
     protected $transaction;
     protected $attemptPaymentAction;
     protected $emptyBasketAction;
-    protected $basketRepository;
     protected $orderRepository;
     protected $orderFactory;
     protected $paymentRequest;
@@ -39,18 +38,16 @@ class CreateOrderFromBasketTest extends TestCase
     {
         parent::setUp();
 
+        $this->createBasket(id: 'basket-1');
+
         $this->order = Mockery::mock(Order::class);
         $this->order->status = OrderStatus::DRAFT;
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->id = 'basket-1';
         $this->transaction = Mockery::mock(Transaction::class);
         $this->transaction->status = TransactionStatus::SETTLED;
         $this->attemptPaymentAction = \Mockery::mock(AttemptPaymentAction::class);
         $this->attemptPaymentAction->allows('handle')->andReturn($this->transaction);
         $this->emptyBasketAction = \Mockery::mock(EmptyBasketAction::class);
         $this->emptyBasketAction->allows('handle');
-        $this->basketRepository = \Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
         $this->orderRepository = \Mockery::mock(OrderRepository::class);
         $this->orderFactory = \Mockery::mock(OrderFactory::class);
         $this->paymentRequest = Mockery::mock(PaymentRequest::class);

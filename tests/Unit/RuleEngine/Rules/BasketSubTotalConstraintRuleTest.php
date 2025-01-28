@@ -2,25 +2,19 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\RuleEngine\Rules;
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\RuleEngine\Rules\BasketSubTotalConstraintRule;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 final class BasketSubTotalConstraintRuleTest extends TestCase
 {
+    use CommerceHelper;
 
     protected $basket;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->basket = new Basket(
-            id: 'basket-id',
-            currency: 'GBP',
-            countryCode: 'GB',
-            subTotal: 0
-        );
+        $this->createBasket();
     }
 
     public function test_passes_with_min_amount(): void

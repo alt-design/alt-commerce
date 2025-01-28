@@ -4,31 +4,24 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveCouponAction;
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
+use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 
 class RemoveCouponActionTest extends TestCase
 {
-    protected $basket;
-    protected $basketRepository;
+    use CommerceHelper;
+
     protected $recalculateBasketAction;
     protected $action;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->basket = Mockery::mock(Basket::class);
-        $this->basket->coupons = [];
-
-        $this->basketRepository = Mockery::mock(BasketRepository::class);
-        $this->basketRepository->allows()->get()->andReturn($this->basket);
+        $this->createBasket();
 
         $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
 
