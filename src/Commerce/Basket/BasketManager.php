@@ -76,6 +76,14 @@ class BasketManager
     }
 
     /**
+     * @return BillingItem[]
+     */
+    public function billingItems(): array
+    {
+        return $this->basket->billingItems;
+    }
+
+    /**
      * @param bool $grouped
      * @return TaxItem[]
      */
@@ -135,6 +143,8 @@ class BasketManager
         return $this->basket->discountItems;
     }
 
-
-
+    public function isEmpty(): bool
+    {
+        return empty($this->lineItems()) && empty($this->billingItems());
+    }
 }
