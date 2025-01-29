@@ -10,10 +10,10 @@ use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
+use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
-use AltDesign\AltCommerce\Exceptions\BillingPlanNotFoundException;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
 
 class PerformCheckout
@@ -25,7 +25,8 @@ class PerformCheckout
         protected OrderRepository    $orderRepository,
         protected OrderFactory       $orderFactory,
         protected GatewayBroker      $gatewayBroker,
-        protected EmptyBasketAction  $emptyBasketAction
+        protected EmptyBasketAction  $emptyBasketAction,
+        protected ProductRepository $productRepository,
     )
     {
 
@@ -56,7 +57,8 @@ class PerformCheckout
 
     protected function attemptPayment(Order $order, string $paymentNonce): void
     {
-        $gateway = $this->gatewayBroker->currency($order->currency)->gateway();
+        $config = $this->gatewayBroker->currency($order->currency);
+        $gateway = $config->gateway();
         $gatewayCustomerId = $gateway->saveCustomer($order->customer, []);
         $gatewayPaymentMethodToken = $gateway->createPaymentMethod($gatewayCustomerId, $paymentNonce);
 
@@ -83,11 +85,19 @@ class PerformCheckout
         }
 
         foreach ($order->billingItems as $item) {
+
+            $gatewayPlanId = $this->productRepository->getGatewayIdForBillingPlan(
+                productId: $item->productId,
+                planId: $item->planId,
+                currency: $order->currency,
+                gateway: $config->driver(),
+            );
+
             $gateway->createSubscription(
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
-                    gatewayPlanId: $item->additional['braintree']['ids'][$order->currency] ?? null,
+                    gatewayPlanId: $gatewayPlanId,
                 )
             );
 

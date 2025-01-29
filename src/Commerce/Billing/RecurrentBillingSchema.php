@@ -96,6 +96,14 @@ class RecurrentBillingSchema implements PricingSchema
     }
 
     /**
+     * @return BillingPlan[]
+     */
+    public function getPlans(): array
+    {
+        return $this->plans;
+    }
+
+    /**
      * @param string $currency
      * @return BillingPlan[]
      * @throws BillingPlanNotFoundException

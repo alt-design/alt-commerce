@@ -32,7 +32,7 @@ class BraintreeGateway implements PaymentGateway
         return $this->gateway->clientToken()->generate();
     }
 
-    public function saveBillingPlan(BillingPlan $billingPlan): void
+    public function saveBillingPlan(BillingPlan $billingPlan): string
     {
         $billingFrequencyMonths = match ($billingPlan->billingInterval->unit) {
             DurationUnit::MONTH => $billingPlan->billingInterval->amount,
@@ -53,7 +53,8 @@ class BraintreeGateway implements PaymentGateway
 
         $result = $existingId ? $this->gateway->plan()->update($existingId, $data) : $this->gateway->plan()->create($data);
 
-        $billingPlan->data['braintree']['ids'][$this->currency] = $result->plan->id;
+        return $result->plan->id;
+
     }
 
     /**
