@@ -27,10 +27,10 @@ class OrderFactory
         array $additional = []
     ): Order
     {
-        $billingAddress = $additional['billing_address'] instanceof Address ?
+        $billingAddress = ($additional['billing_address'] ?? null) instanceof Address ?
             $additional['billing_address'] : null;
 
-        $shippingAddress = $additional['shipping_address'] instanceof Address ?
+        $shippingAddress = ($additional['shipping_address'] ?? null) instanceof Address ?
             $additional['shipping_address'] : null;
 
         unset($additional['billing_address'], $additional['shipping_address']);
