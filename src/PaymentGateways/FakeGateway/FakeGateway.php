@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\PaymentGateways\FakeGateway;
 
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
@@ -29,7 +30,7 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
         return 'fake-payment-method-id';
     }
 
-    public function createSubscription(CreateSubscriptionRequest $request): Transaction
+    public function createSubscription(CreateSubscriptionRequest $request): Subscription
     {
         throw new \Exception('Gateway not implemented');
     }

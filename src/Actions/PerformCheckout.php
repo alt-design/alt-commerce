@@ -15,6 +15,7 @@ use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
+use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 
 class PerformCheckout
 {
@@ -93,18 +94,17 @@ class PerformCheckout
                 gateway: $config->driver(),
             );
 
-            $transaction = $gateway->createSubscription(
+            if (empty($gatewayPlanId)) {
+                throw new PaymentGatewayException('Plan has not been setup in gateway');
+            }
+
+            $order->subscriptions[] = $gateway->createSubscription(
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
                     gatewayPlanId: $gatewayPlanId,
                 )
             );
-
-            $order->transactions[] = $transaction;
-
-            // todo sort out what to do with transaction status
-
         }
     }
 

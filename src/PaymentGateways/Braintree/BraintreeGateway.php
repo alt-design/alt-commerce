@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\PaymentGateways\Braintree;
 
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
@@ -10,6 +11,7 @@ use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Enum\DurationUnit;
+use AltDesign\AltCommerce\Enum\SubscriptionStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
@@ -53,17 +55,9 @@ class BraintreeGateway implements PaymentGateway
 
         $response = $this->gateway
             ->plan()
-            ->update($id, $this->buildBillingPlanData($billingPlan));
+            ->update($id, $data);
 
         $this->handleResponse($response);
-    }
-
-    protected function handleResponse(Successful|Error $response)
-    {
-        if ($response instanceof Error) {
-            // todo better exception that can take multiple errors.
-            throw new PaymentGatewayException();
-        }
     }
 
     /**
@@ -172,7 +166,7 @@ class BraintreeGateway implements PaymentGateway
         );
     }
 
-    public function createSubscription(CreateSubscriptionRequest $request): Transaction
+    public function createSubscription(CreateSubscriptionRequest $request): Subscription
     {
         $result = $this->gateway->subscription()->create([
                 'paymentMethodToken' => $request->gatewayPaymentMethodToken,
@@ -183,21 +177,23 @@ class BraintreeGateway implements PaymentGateway
             ]
         );
 
-        if (!$result->success) {
-            throw new PaymentGatewayException('Braintree payment failed with error'.$result->message);
-        }
+        $this->handleResponse($result);
 
-        return new Transaction(
-            type: $this->matchType($result->transaction->type),
-            status: $this->matchStatus($result->transaction->status),
-            currency: $result->transaction->currencyIsoCode,
-            transactionId: $result->transaction->id,
+        return new Subscription(
+            subscriptionId: $result->subscription->id,
             gateway: 'braintree',
-            amount: intval($result->transaction->amount) * 100,
-            createdAt: DateTimeImmutable::createFromMutable($result->transaction->createdAt),
-            rejectionReason: $result->transaction->gatewayRejectionReason,
-            additional: $result->transaction->toArray(),
+            status: SubscriptionStatus::from(strtolower($result->subscription->status)),
+            createdAt: DateTimeImmutable::createFromMutable($result->subscription->createdAt),
+            additional: $result->subscription->toArray()
         );
+    }
+
+    protected function handleResponse(Successful|Error $response): void
+    {
+        if ($response instanceof Error) {
+            // todo better exception that can take multiple errors.
+            throw new PaymentGatewayException($response->message);
+        }
     }
 
     protected function matchType(string $type): TransactionType

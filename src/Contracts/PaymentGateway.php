@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\Contracts;
 
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
@@ -24,7 +25,7 @@ interface PaymentGateway
 
     public function updateBillingPlan(string $id, BillingPlan $billingPlan): void;
 
-    public function createSubscription(CreateSubscriptionRequest $request): Transaction;
+    public function createSubscription(CreateSubscriptionRequest $request): Subscription;
 
     public function createCharge(CreatePaymentRequest $request): Transaction;
 

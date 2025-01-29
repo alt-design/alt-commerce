@@ -7,6 +7,7 @@ use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
+use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\Customer;
@@ -44,6 +45,7 @@ class Order
      * @param Address|null $billingAddress
      * @param Address|null $shippingAddress
      * @param Transaction[] $transactions
+     * @param Subscription[] $subscriptions
      * @param array<string, string> $additional
      */
     public function __construct(
@@ -68,6 +70,7 @@ class Order
         public Address|null $billingAddress = null,
         public Address|null $shippingAddress = null,
         public array $transactions = [],
+        public array $subscriptions = [],
         public array $additional = [],
     )
     {
