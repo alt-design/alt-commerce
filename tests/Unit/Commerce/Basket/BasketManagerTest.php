@@ -45,6 +45,7 @@ class BasketManagerTest extends TestCase
                 plans: [
                     new BillingPlan(
                         id: '1-month',
+                        name: 'monthly plan',
                         prices: new PriceCollection([
                             new Money(5000, 'GBP')
                         ]),

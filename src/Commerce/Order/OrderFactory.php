@@ -18,19 +18,23 @@ class OrderFactory
     /**
      * @param Basket $basket
      * @param Customer $customer
-     * @param Address|null $billingAddress
-     * @param Address|null $shippingAddress
-     * @param array<string, string> $additional
+     * @param array<string, mixed> $additional
      * @return Order
      */
     public function createFromBasket(
         Basket $basket,
         Customer $customer,
-        Address|null $billingAddress = null,
-        Address|null $shippingAddress = null,
         array $additional = []
     ): Order
     {
+        $billingAddress = $additional['billing_address'] instanceof Address ?
+            $additional['billing_address'] : null;
+
+        $shippingAddress = $additional['shipping_address'] instanceof Address ?
+            $additional['shipping_address'] : null;
+
+        unset($additional['billing_address'], $additional['shipping_address']);
+
         return new Order(
             customer: $customer,
             status: OrderStatus::DRAFT,
@@ -41,6 +45,7 @@ class OrderFactory
             discountItems: $basket->discountItems,
             deliveryItems: $basket->deliveryItems,
             feeItems: $basket->feeItems,
+            billingItems: $basket->billingItems,
             subTotal: $basket->subTotal,
             taxTotal: $basket->taxTotal,
             deliveryTotal: $basket->deliveryTotal,
@@ -49,8 +54,8 @@ class OrderFactory
             total: $basket->total,
             outstanding: $basket->total,
             basketId: $basket->id,
-            billingAddress: $billingAddress ? clone $billingAddress : null,
-            shippingAddress: $shippingAddress ? clone $shippingAddress : null,
+            billingAddress: $billingAddress,
+            shippingAddress: $shippingAddress,
             transactions: [],
             additional: $additional,
         );

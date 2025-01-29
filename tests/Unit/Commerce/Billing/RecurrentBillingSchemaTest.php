@@ -18,6 +18,7 @@ class RecurrentBillingSchemaTest extends TestCase
             plans: [
                 new BillingPlan(
                     id: '1-month',
+                    name: 'monthly plan',
                     prices: new PriceCollection([
                         new Money(1000, 'GBP'),
                         new Money(1500, 'USD'),
@@ -27,6 +28,7 @@ class RecurrentBillingSchemaTest extends TestCase
                 ),
                 new BillingPlan(
                     id: '6-month',
+                    name: '6 month plan',
                     prices: new PriceCollection([
                         new Money(5000, 'GBP'),
                         new Money(7500, 'USD'),
@@ -36,6 +38,7 @@ class RecurrentBillingSchemaTest extends TestCase
                 ),
                 new BillingPlan(
                     id: '1-year',
+                    name: '1 year plan',
                     prices: new PriceCollection([
                         new Money(10000, 'GBP'),
                         new Money(15000, 'USD'),
@@ -45,6 +48,7 @@ class RecurrentBillingSchemaTest extends TestCase
                 ),
                 new BillingPlan(
                     id: '3-year',
+                    name: '3 year plan',
                     prices: new PriceCollection([
                         new Money(25200, 'GBP'),
                     ]),
@@ -52,6 +56,7 @@ class RecurrentBillingSchemaTest extends TestCase
                 ),
                 new BillingPlan(
                     id: '5-year',
+                    name: '5 year plan',
                     prices: new PriceCollection([
                         new Money(100000, 'AUD'),
                     ]),
@@ -100,6 +105,7 @@ class RecurrentBillingSchemaTest extends TestCase
             plans: [
                 new BillingPlan(
                     id: '1-month',
+                    name: 'monthly plan',
                     prices: new PriceCollection([
                         new Money(1000, 'GBP'),
                         new Money(1300, 'EUR')
@@ -108,6 +114,7 @@ class RecurrentBillingSchemaTest extends TestCase
                 ),
                 new BillingPlan(
                     id: '6-month',
+                    name: '6 monthly plan',
                     prices: new PriceCollection([
                         new Money(7500, 'USD'),
                     ]),
@@ -127,6 +134,7 @@ class RecurrentBillingSchemaTest extends TestCase
 
         $plan1 = new BillingPlan(
             id: 'plan-1',
+            name: 'monthly plan',
             prices: new PriceCollection([
                 new Money(1000, 'GBP'),
             ]),
@@ -135,6 +143,7 @@ class RecurrentBillingSchemaTest extends TestCase
 
         $plan2 = new BillingPlan(
             id: 'plan-2',
+            name: 'monthly plan',
             prices: new PriceCollection([
                 new Money(1000, 'GBP'),
                 new Money(1000, 'EUR')
@@ -144,6 +153,7 @@ class RecurrentBillingSchemaTest extends TestCase
 
         $plan3 = new BillingPlan(
             id: 'plan-3',
+            name: 'monthly plan',
             prices: new PriceCollection([
                 new Money(1000, 'USD')
             ]),

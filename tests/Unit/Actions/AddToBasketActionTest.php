@@ -102,6 +102,7 @@ class AddToBasketActionTest extends TestCase
                 plans: [
                     new BillingPlan(
                         id: '1-month',
+                        name: 'monthly plan',
                         prices: new PriceCollection([
                             new Money(100, 'USD'),
                         ]),

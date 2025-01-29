@@ -52,6 +52,7 @@ class RemoveFromBasketActionTest extends TestCase
                 plans: [
                     new BillingPlan(
                         id: '1-month',
+                        name: 'monthly plan',
                         prices: new PriceCollection([
                             new Money(200, 'GBP')
                         ]),

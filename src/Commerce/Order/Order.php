@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Commerce\Order;
 
+use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
@@ -31,6 +32,7 @@ class Order
      * @param DiscountItem[] $discountItems
      * @param DeliveryItem[] $deliveryItems
      * @param FeeItem[] $feeItems
+     * @param BillingItem[] $billingItems
      * @param int $subTotal
      * @param int $taxTotal
      * @param int $deliveryTotal
@@ -54,6 +56,7 @@ class Order
         public array $discountItems,
         public array $deliveryItems,
         public array $feeItems,
+        public array $billingItems,
         public int $subTotal,
         public int $taxTotal,
         public int $deliveryTotal,

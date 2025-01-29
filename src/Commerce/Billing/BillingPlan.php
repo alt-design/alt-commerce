@@ -7,11 +7,16 @@ use AltDesign\AltCommerce\Support\PriceCollection;
 
 class BillingPlan
 {
+    /**
+     * @param array<string, mixed> $data
+     */
     public function __construct(
         public string $id,
+        public string $name,
         public PriceCollection $prices,
         public Duration $billingInterval,
         public Duration|null $trialPeriod = null,
+        public array $data = [],
     )
     {
 

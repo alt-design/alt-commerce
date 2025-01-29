@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
