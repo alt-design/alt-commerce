@@ -24,7 +24,7 @@ interface PaymentGateway
 
     public function updateBillingPlan(string $id, BillingPlan $billingPlan): void;
 
-    public function createSubscription(CreateSubscriptionRequest $request): void;
+    public function createSubscription(CreateSubscriptionRequest $request): Transaction;
 
     public function createCharge(CreatePaymentRequest $request): Transaction;
 

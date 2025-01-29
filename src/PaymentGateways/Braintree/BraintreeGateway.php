@@ -48,6 +48,11 @@ class BraintreeGateway implements PaymentGateway
     }
 
 
+    /**
+     * @param BillingPlan $billingPlan
+     * @return array<string,mixed>
+     * @throws \AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException
+     */
     protected function buildBillingPlanData(BillingPlan $billingPlan): array
     {
         $billingFrequencyMonths = match ($billingPlan->billingInterval->unit) {
@@ -60,7 +65,7 @@ class BraintreeGateway implements PaymentGateway
             'name' => $billingPlan->name,
             'billingFrequency' => $billingFrequencyMonths,
             'currencyIsoCode' => $this->currency,
-            'price' => $billingPlan->prices->getAmount($this->currency),
+            'price' => $billingPlan->prices->getAmount($this->currency) / 100,
         ];
 
         if (!!$billingPlan->trialPeriod) {
@@ -149,9 +154,9 @@ class BraintreeGateway implements PaymentGateway
         );
     }
 
-    public function createSubscription(CreateSubscriptionRequest $request): void
+    public function createSubscription(CreateSubscriptionRequest $request): Transaction
     {
-        $this->gateway->subscription()->create([
+        $result = $this->gateway->subscription()->create([
                 'paymentMethodToken' => $request->gatewayPaymentMethodToken,
                 'planId' => $request->gatewayPlanId,
                 'options' => [
@@ -160,7 +165,21 @@ class BraintreeGateway implements PaymentGateway
             ]
         );
 
-        // todo return transactions object and subscription object
+        if (!$result->success) {
+            throw new PaymentGatewayException('Braintree payment failed with error'.$result->message);
+        }
+
+        return new Transaction(
+            type: $this->matchType($result->transaction->type),
+            status: $this->matchStatus($result->transaction->status),
+            currency: $result->transaction->currencyIsoCode,
+            transactionId: $result->transaction->id,
+            gateway: 'braintree',
+            amount: intval($result->transaction->amount) * 100,
+            createdAt: DateTimeImmutable::createFromMutable($result->transaction->createdAt),
+            rejectionReason: $result->transaction->gatewayRejectionReason,
+            additional: $result->transaction->toArray(),
+        );
     }
 
     protected function matchType(string $type): TransactionType

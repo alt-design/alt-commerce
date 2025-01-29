@@ -63,7 +63,7 @@ class PerformCheckout
         $gatewayPaymentMethodToken = $gateway->createPaymentMethod($gatewayCustomerId, $paymentNonce);
 
         if (!empty($order->total)) {
-            $transaction  = $gateway->createCharge(
+            $transaction = $gateway->createCharge(
                 new CreatePaymentRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
@@ -93,7 +93,7 @@ class PerformCheckout
                 gateway: $config->driver(),
             );
 
-            $gateway->createSubscription(
+            $transaction = $gateway->createSubscription(
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
@@ -101,7 +101,9 @@ class PerformCheckout
                 )
             );
 
-            // todo see result and grab transition / subscription
+            $order->transactions[] = $transaction;
+
+            // todo sort out what to do with transaction status
 
         }
     }

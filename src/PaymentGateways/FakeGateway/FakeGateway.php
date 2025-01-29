@@ -16,22 +16,22 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
 
     public function createPaymentNonceAuthToken(): string
     {
-        return 'test-auth-token';
+        return 'fake-nonce-token';
     }
 
     public function saveCustomer(Customer $customer, array $data): string
     {
-        return '';
+        return 'fake-customer-id';
     }
 
     public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
     {
-        return '';
+        return 'fake-payment-method-id';
     }
 
-    public function createSubscription(CreateSubscriptionRequest $request): void
+    public function createSubscription(CreateSubscriptionRequest $request): Transaction
     {
-
+        throw new \Exception('Gateway not implemented');
     }
 
     public function createCharge(CreatePaymentRequest $request): Transaction
@@ -41,7 +41,7 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
 
     public function createBillingPlan(BillingPlan $billingPlan): string
     {
-        return 'fake-gateway-billing-plan-id';
+        return 'fake-billing-plan-id';
     }
 
     public function updateBillingPlan(string $id, BillingPlan $billingPlan) : void
