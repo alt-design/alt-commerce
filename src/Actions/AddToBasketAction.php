@@ -69,6 +69,7 @@ class AddToBasketAction
                 amount: $billingPlan->prices->getAmount($basket->currency),
                 billingInterval: $billingPlan->billingInterval,
                 trialPeriod: $billingPlan->trialPeriod,
+                additional: $billingPlan->data,
             );
 
         } else {

@@ -134,14 +134,9 @@ class BraintreeGateway implements PaymentGateway
 
     public function createSubscription(CreateSubscriptionRequest $request): void
     {
-        $planId = $request->billingPlan->data['braintree']['ids'][$this->currency] ?? null;
-        if (empty($planId)) {
-            throw new PaymentGatewayException('Unable to find braintree plan id');
-        }
-
         $this->gateway->subscription()->create([
                 'paymentMethodToken' => $request->gatewayPaymentMethodToken,
-                'planId' => $planId,
+                'planId' => $request->gatewayPlanId,
                 'options' => [
                     'startImmediately' => true
                 ]

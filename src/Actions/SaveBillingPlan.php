@@ -7,7 +7,9 @@ use AltDesign\AltCommerce\Commerce\Payment\GatewayBroker;
 
 class SaveBillingPlan
 {
-    public function __construct(protected GatewayBroker $gatewayBroker)
+    public function __construct(
+        protected GatewayBroker $gatewayBroker,
+    )
     {
 
     }
@@ -20,5 +22,10 @@ class SaveBillingPlan
                 ->gateway()
                 ->saveBillingPlan($billingPlan);
         }
+        // todo maybe remove this method or we need a way of saving the billing plan
+        // ideally it needs to be through an action
+        // like to keep everything else behind this
+
+        //$this->billingPlanRepository->save($billingPlan);
     }
 }

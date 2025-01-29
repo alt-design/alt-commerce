@@ -6,6 +6,9 @@ use AltDesign\AltCommerce\Support\Duration;
 
 class BillingItem
 {
+    /**
+     * @param array<string, mixed> $additional
+     */
     public function __construct(
         public string $productId,
         public string $productName,
@@ -13,6 +16,7 @@ class BillingItem
         public int $amount,
         public Duration $billingInterval,
         public Duration|null $trialPeriod = null,
+        public array $additional = [],
     )
     {
 

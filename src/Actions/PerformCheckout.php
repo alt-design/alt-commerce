@@ -8,7 +8,6 @@ use AltDesign\AltCommerce\Commerce\Payment\GatewayBroker;
 use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\BillingPlanRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
@@ -23,7 +22,6 @@ class PerformCheckout
     public function __construct(
         protected BasketRepository   $basketRepository,
         protected SettingsRepository $settingsRepository,
-        protected BillingPlanRepository $billingPlanRepository,
         protected OrderRepository    $orderRepository,
         protected OrderFactory       $orderFactory,
         protected GatewayBroker      $gatewayBroker,
@@ -38,20 +36,15 @@ class PerformCheckout
      * @param string $paymentNonce
      * @param array<string, mixed> $additional
      * @return Order
-     * @throws BillingPlanNotFoundException
      * @throws PaymentFailedException
      */
     public function handle(Customer $customer, string $paymentNonce, array $additional = []): Order
     {
-
         $order = $this->getOrder($customer, $additional);
-
         try {
-
             $this->attemptPayment($order, $paymentNonce);
 
             $this->emptyBasketAction->handle();
-
         } finally {
 
             $this->orderRepository->save($order);
@@ -66,8 +59,6 @@ class PerformCheckout
         $gateway = $this->gatewayBroker->currency($order->currency)->gateway();
         $gatewayCustomerId = $gateway->saveCustomer($order->customer, []);
         $gatewayPaymentMethodToken = $gateway->createPaymentMethod($gatewayCustomerId, $paymentNonce);
-
-        // todo update customer, potentially customer repository
 
         if (!empty($order->total)) {
             $transaction  = $gateway->createCharge(
@@ -92,21 +83,15 @@ class PerformCheckout
         }
 
         foreach ($order->billingItems as $item) {
-
-            $billingPlan = $this->billingPlanRepository->find($item->planId);
-            if (empty($billingPlan)) {
-                throw new BillingPlanNotFoundException('Billing plan not found '.$item->planId);
-            }
-
             $gateway->createSubscription(
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
-                    billingPlan: $billingPlan,
+                    gatewayPlanId: $item->additional['braintree']['ids'][$order->currency] ?? null,
                 )
             );
 
-            // todo
+            // todo see result and grab transition / subscription
 
         }
     }
