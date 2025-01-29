@@ -14,6 +14,8 @@ use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use Braintree\Gateway;
+use Braintree\Result\Error;
+use Braintree\Result\Successful;
 use DateTimeImmutable;
 
 class BraintreeGateway implements PaymentGateway
@@ -34,19 +36,35 @@ class BraintreeGateway implements PaymentGateway
 
     public function createBillingPlan(BillingPlan $billingPlan): string
     {
-        return $this->gateway
+        $response = $this->gateway
             ->plan()
-            ->create($this->buildBillingPlanData($billingPlan))
-            ->plan->id;
+            ->create($this->buildBillingPlanData($billingPlan));
+
+        $this->handleResponse($response);
+
+        return $response->plan->id;
     }
 
     public function updateBillingPlan(string $id, BillingPlan $billingPlan): void
     {
-        $this->gateway
+        $data = $this->buildBillingPlanData($billingPlan);
+
+        unset($data['billingFrequency']);
+
+        $response = $this->gateway
             ->plan()
             ->update($id, $this->buildBillingPlanData($billingPlan));
+
+        $this->handleResponse($response);
     }
 
+    protected function handleResponse(Successful|Error $response)
+    {
+        if ($response instanceof Error) {
+            // todo better exception that can take multiple errors.
+            throw new PaymentGatewayException();
+        }
+    }
 
     /**
      * @param BillingPlan $billingPlan
