@@ -26,18 +26,26 @@ class SaveProduct
 
                     $config = $this->gatewayBroker->currency($price->currency);
 
-                    $planId = $this->gatewayBroker
-                        ->currency($price->currency)
-                        ->gateway()
-                        ->saveBillingPlan($plan);
-
-                    $this->productRepository->saveGatewayIdForBillingPlan(
+                    $gatewayPlanId = $this->productRepository->getGatewayIdForBillingPlan(
                         productId: $product->id(),
-                        planId: $planId,
+                        planId: $plan->id,
                         currency: $price->currency,
                         gateway: $config->driver(),
-                        gatewayId: $planId
                     );
+
+                    if ($gatewayPlanId) {
+                        $config->gateway()->updateBillingPlan($gatewayPlanId, $plan);
+                    } else {
+
+                        $gatewayPlanId = $config->gateway()->createBillingPlan($plan);
+                        $this->productRepository->saveGatewayIdForBillingPlan(
+                            productId: $product->id(),
+                            planId: $plan->id,
+                            currency: $price->currency,
+                            gateway: $config->driver(),
+                            gatewayId: $gatewayPlanId
+                        );
+                    }
                 }
             }
         }

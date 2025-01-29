@@ -20,7 +20,9 @@ interface PaymentGateway
 
     public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string;
 
-    public function saveBillingPlan(BillingPlan $billingPlan): string;
+    public function createBillingPlan(BillingPlan $billingPlan): string;
+
+    public function updateBillingPlan(string $id, BillingPlan $billingPlan): void;
 
     public function createSubscription(CreateSubscriptionRequest $request): void;
 

@@ -32,7 +32,23 @@ class BraintreeGateway implements PaymentGateway
         return $this->gateway->clientToken()->generate();
     }
 
-    public function saveBillingPlan(BillingPlan $billingPlan): string
+    public function createBillingPlan(BillingPlan $billingPlan): string
+    {
+        return $this->gateway
+            ->plan()
+            ->create($this->buildBillingPlanData($billingPlan))
+            ->plan->id;
+    }
+
+    public function updateBillingPlan(string $id, BillingPlan $billingPlan): void
+    {
+        $this->gateway
+            ->plan()
+            ->update($id, $this->buildBillingPlanData($billingPlan));
+    }
+
+
+    protected function buildBillingPlanData(BillingPlan $billingPlan): array
     {
         $billingFrequencyMonths = match ($billingPlan->billingInterval->unit) {
             DurationUnit::MONTH => $billingPlan->billingInterval->amount,
@@ -40,20 +56,20 @@ class BraintreeGateway implements PaymentGateway
             default => throw new \Exception('Braintree only supports monthly and yearly billing intervals')
         };
 
-        $existingId = $billingPlan->data['braintree']['ids'][$this->currency] ?? null;
         $data = [
             'name' => $billingPlan->name,
             'billingFrequency' => $billingFrequencyMonths,
             'currencyIsoCode' => $this->currency,
             'price' => $billingPlan->prices->getAmount($this->currency),
-            'trialPeriod' => !!$billingPlan->trialPeriod,
-            'trialDuration' => $billingPlan->trialPeriod ? $billingPlan->trialPeriod->days() : 0,
-            'trialDurationUnit' => 'day',
         ];
 
-        $result = $existingId ? $this->gateway->plan()->update($existingId, $data) : $this->gateway->plan()->create($data);
+        if (!!$billingPlan->trialPeriod) {
+            $data['trialPeriod'] = true;
+            $data['trialDuration'] = $billingPlan->trialPeriod->days() ;
+            $data['trialPeriodUnit'] = 'day';
+        }
 
-        return $result->plan->id;
+        return $data;
 
     }
 
@@ -200,6 +216,4 @@ class BraintreeGateway implements PaymentGateway
         array_shift($nameParts);
         return implode(' ', $nameParts);
     }
-
-
 }

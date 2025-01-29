@@ -2,10 +2,10 @@
 
 namespace AltDesign\AltCommerce\Commerce\Payment;
 
-use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\PaymentGatewayDriver;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use AltDesign\AltCommerce\PaymentGateways\Braintree\BraintreeGatewayDriver;
+use AltDesign\AltCommerce\PaymentGateways\FakeGateway\FakeGateway;
 
 class GatewayBroker
 {
@@ -80,6 +80,7 @@ class GatewayBroker
     {
         return [
             'braintree' => BraintreeGatewayDriver::class,
+            'fake' => FakeGateway::class,
         ];
     }
 }
