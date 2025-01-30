@@ -49,19 +49,19 @@ class BraintreeGateway implements PaymentGateway
                  * @var Plan $plan
                  */
 
-                $updatedAt = $plan->updatedAt;
-
-                // grab plan to see if billing frequency has changes
                 $plan = $this->client->request(fn(Gateway $gateway) => $gateway->plan()->find($gatewayId));
 
                 if ((int)$plan->billing_frequency !== $billingPlan->billingInterval->months()) {
                     $gatewayId = null;
                 } else {
-                    // ensure plan has been changed based on update
+
                     $data = $this->buildBillingPlanData($billingPlan);
                     unset($data['billingFrequency']);
-                    $this->client->request(fn(Gateway $gateway) => $gateway->plan()->update($gatewayId, $data));
-                    return $billingPlan;
+
+                    $diff = array_filter($data, fn($val, $key) => $plan->{$key} != $val, ARRAY_FILTER_USE_BOTH);
+                    if (!empty($diff)) {
+                        $this->client->request(fn(Gateway $gateway) => $gateway->plan()->update($gatewayId, $data));
+                    }
                 }
 
             } catch (NotFound) {
