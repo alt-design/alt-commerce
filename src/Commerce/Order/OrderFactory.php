@@ -7,6 +7,7 @@ use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderNumberGenerator;
 use AltDesign\AltCommerce\Enum\OrderStatus;
+use Ramsey\Uuid\Uuid;
 
 class OrderFactory
 {
@@ -36,6 +37,7 @@ class OrderFactory
         unset($additional['billing_address'], $additional['shipping_address']);
 
         return new Order(
+            id: Uuid::uuid4(),
             customer: $customer,
             status: OrderStatus::DRAFT,
             currency: $basket->currency,
@@ -53,6 +55,7 @@ class OrderFactory
             feeTotal: $basket->feeTotal,
             total: $basket->total,
             outstanding: $basket->total,
+            createdAt: new \DateTimeImmutable(),
             basketId: $basket->id,
             billingAddress: $billingAddress,
             shippingAddress: $shippingAddress,

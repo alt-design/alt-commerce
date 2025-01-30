@@ -80,7 +80,7 @@ class GatewayBroker
     {
         return [
             'braintree' => BraintreeGatewayDriver::class,
-            'fake' => FakeGateway::class,
+            'null' => FakeGateway::class,
         ];
     }
 }

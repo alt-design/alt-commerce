@@ -40,14 +40,9 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
         throw new \Exception('Gateway not implemented');
     }
 
-    public function createBillingPlan(BillingPlan $billingPlan): string
+    public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
     {
-        return 'fake-billing-plan-id';
-    }
-
-    public function updateBillingPlan(string $id, BillingPlan $billingPlan) : void
-    {
-
+        return $billingPlan;
     }
 
     public function name(): string
@@ -64,4 +59,5 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
     {
         return new self();
     }
+
 }

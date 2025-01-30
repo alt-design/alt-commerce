@@ -10,12 +10,10 @@ use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
-use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
-use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 
 class PerformCheckout
 {
@@ -26,8 +24,7 @@ class PerformCheckout
         protected OrderRepository    $orderRepository,
         protected OrderFactory       $orderFactory,
         protected GatewayBroker      $gatewayBroker,
-        protected EmptyBasketAction  $emptyBasketAction,
-        protected ProductRepository $productRepository,
+        protected EmptyBasketAction  $emptyBasketAction
     )
     {
 
@@ -86,23 +83,11 @@ class PerformCheckout
         }
 
         foreach ($order->billingItems as $item) {
-
-            $gatewayPlanId = $this->productRepository->getGatewayIdForBillingPlan(
-                productId: $item->productId,
-                planId: $item->planId,
-                currency: $order->currency,
-                gateway: $config->driver(),
-            );
-
-            if (empty($gatewayPlanId)) {
-                throw new PaymentGatewayException('Plan has not been setup in gateway');
-            }
-
             $order->subscriptions[] = $gateway->createSubscription(
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
-                    gatewayPlanId: $gatewayPlanId,
+                    gatewayPlanId: $item->getGatewayId($config->driver()),
                 )
             );
         }

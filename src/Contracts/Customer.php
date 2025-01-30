@@ -8,6 +8,8 @@ interface Customer
 
     public function customerEmail(): string;
 
+    public function findGatewayId(string $gateway): null|string;
+
     /**
      * @return array<string,mixed>
      */

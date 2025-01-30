@@ -24,28 +24,12 @@ class SaveProduct
             foreach ($price->getPlans() as $plan) {
                 foreach ($plan->prices as $price) {
 
-                    $config = $this->gatewayBroker->currency($price->currency);
+                    $plan = $this->gatewayBroker
+                        ->currency($price->currency)
+                        ->gateway()
+                        ->saveBillingPlan($plan);
 
-                    $gatewayPlanId = $this->productRepository->getGatewayIdForBillingPlan(
-                        productId: $product->id(),
-                        planId: $plan->id,
-                        currency: $price->currency,
-                        gateway: $config->driver(),
-                    );
-
-                    if ($gatewayPlanId) {
-                        $config->gateway()->updateBillingPlan($gatewayPlanId, $plan);
-                    } else {
-
-                        $gatewayPlanId = $config->gateway()->createBillingPlan($plan);
-                        $this->productRepository->saveGatewayIdForBillingPlan(
-                            productId: $product->id(),
-                            planId: $plan->id,
-                            currency: $price->currency,
-                            gateway: $config->driver(),
-                            gatewayId: $gatewayPlanId
-                        );
-                    }
+                    $this->productRepository->saveBillingPlan($product->id(), $plan);
                 }
             }
         }

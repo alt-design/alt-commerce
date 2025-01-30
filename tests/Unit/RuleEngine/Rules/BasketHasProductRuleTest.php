@@ -19,8 +19,6 @@ class BasketHasProductRuleTest extends TestCase
     protected function setUp(): void
     {
         $this->createBasket();
-
-
         $this->product = $this->createProduct(
             id: 54321,
             priceSchema: new FixedPriceSchema(

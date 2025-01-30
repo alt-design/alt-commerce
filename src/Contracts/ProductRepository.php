@@ -2,11 +2,11 @@
 
 namespace AltDesign\AltCommerce\Contracts;
 
+use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
+
 interface ProductRepository
 {
     public function find(string $productId): ?Product;
 
-    public function saveGatewayIdForBillingPlan(string $productId, string $planId, string $currency, string $gateway, string $gatewayId): void;
-
-    public function getGatewayIdForBillingPlan(string $productId, string $planId, string $currency, string $gateway): string|null;
+    public function saveBillingPlan(string $productId, BillingPlan $billingPlan): void;
 }

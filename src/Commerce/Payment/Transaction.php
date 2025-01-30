@@ -4,31 +4,28 @@ namespace AltDesign\AltCommerce\Commerce\Payment;
 
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
+use AltDesign\AltCommerce\Support\GatewayEntity;
+use AltDesign\AltCommerce\Traits\HasGatewayEntity;
 use DateTimeImmutable;
 
 class Transaction
 {
+    use HasGatewayEntity;
+
     /**
-     * @param TransactionType $type
-     * @param TransactionStatus $status
-     * @param string $currency
-     * @param string $transactionId
-     * @param string $gateway
-     * @param int $amount
-     * @param DateTimeImmutable $createdAt
-     * @param string|null $rejectionReason
      * @param array<string, mixed> $additional
+     * @param GatewayEntity[] $gatewayEntities
      */
     public function __construct(
-        public TransactionType $type,
+        public string            $id,
+        public TransactionType   $type,
         public TransactionStatus $status,
-        public string $currency,
-        public string $transactionId,
-        public string $gateway,
-        public int $amount,
+        public string            $currency,
+        public int               $amount,
         public DateTimeImmutable $createdAt,
-        public string|null $rejectionReason = null,
-        public array $additional = [],
+        public string|null       $rejectionReason = null,
+        public array             $additional = [],
+        public array             $gatewayEntities = [],
     )
     {
 

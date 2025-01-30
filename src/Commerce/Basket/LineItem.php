@@ -14,17 +14,18 @@ class LineItem
      * @param array<int|string, string> $productData
      */
     public function __construct(
+        public string $id,
         public string $productId,
         public string $productName,
-        public bool $taxable = false,
-        public array $taxRules = [],
-        public array $options = [],
-        public array $discounts = [],
-        public array $productData = [],
-        public int $quantity = 1,
-        public int $amount = 0,
-        public int $discountAmount = 0,
-        public int $subTotal = 0,
+        public bool   $taxable = false,
+        public array  $taxRules = [],
+        public array  $options = [],
+        public array  $discounts = [],
+        public array  $productData = [],
+        public int    $quantity = 1,
+        public int    $amount = 0,
+        public int    $discountAmount = 0,
+        public int    $subTotal = 0,
     )
     {
 

@@ -3,6 +3,8 @@
 namespace AltDesign\AltCommerce\PaymentGateways\Braintree;
 
 
+use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
+use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\PaymentGatewayFactory;
 use AltDesign\AltCommerce\Exceptions\InvalidConfigException;
@@ -29,7 +31,11 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
         ]);
 
         return new BraintreeGateway(
-            gateway: $gateway,
+            transactionFactory: new TransactionFactory(),
+            subscriptionFactory: new SubscriptionFactory(),
+            client: new BraintreeApiClient(
+                gateway: $gateway
+            ),
             currency: $currency,
         );
 

@@ -48,7 +48,7 @@ class UpdateBasketCurrencyAction
         foreach ($basket->billingItems as $key => $item) {
             $product = $this->productRepository->find($item->productId);
             if ($product && $product->price()->hasBillingPlan()) {
-                $billingPlan = $product->price()->getBillingPlan($currency, ['plan' => $item->planId]);
+                $billingPlan = $product->price()->getBillingPlan($currency, ['plan' => $item->id]);
                 if ($billingPlan->prices->isCurrencySupported($currency)) {
                     $basket->billingItems[$key]->amount = $billingPlan->prices->getAmount($currency);
                     continue;

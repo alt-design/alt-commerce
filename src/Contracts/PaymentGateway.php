@@ -13,17 +13,13 @@ interface PaymentGateway
     public function createPaymentNonceAuthToken(): string;
 
     /**
-     * @param Customer $customer
      * @param array<string, mixed> $data
-     * @return string
      */
     public function saveCustomer(Customer $customer, array $data): string;
 
     public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string;
 
-    public function createBillingPlan(BillingPlan $billingPlan): string;
-
-    public function updateBillingPlan(string $id, BillingPlan $billingPlan): void;
+    public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan;
 
     public function createSubscription(CreateSubscriptionRequest $request): Subscription;
 

@@ -9,6 +9,7 @@ use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
 use Mockery;
+use Ramsey\Uuid\Uuid;
 
 trait CommerceHelper
 {
@@ -51,6 +52,7 @@ trait CommerceHelper
     protected function addLineItemToBasket($product, $quantity): LineItem
     {
         $lineItem = new LineItem(
+            id: Uuid::uuid4(),
             productId: $product->id(),
             productName: $product->name(),
             taxable: $product->taxable(),
@@ -68,9 +70,10 @@ trait CommerceHelper
         $billingPlan = $product->price()->getBillingPlan($this->basket->currency, ['plan' => $planId]);
 
         $billingItem = new BillingItem(
+            id: Uuid::uuid4(),
             productId: $product->id(),
+            billingPlanId: $billingPlan->id,
             productName: $product->name(),
-            planId: $billingPlan->id,
             amount: $billingPlan->prices->getAmount($this->basket->currency, ['plan' => $planId]),
             billingInterval: $billingPlan->billingInterval,
         );

@@ -11,6 +11,7 @@ use AltDesign\AltCommerce\Exceptions\BillingPlanAlreadyInBasketException;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
+use Ramsey\Uuid\Uuid;
 
 
 class AddToBasketAction
@@ -63,17 +64,20 @@ class AddToBasketAction
         if ($product->price()->hasBillingPlan()) {
             $billingPlan = $product->price()->getBillingPlan($basket->currency, ['plan' => $options['plan'] ?? null]);
             $basket->billingItems[] = new BillingItem(
+                id: Uuid::uuid4(),
                 productId: $product->id(),
+                billingPlanId: $billingPlan->id,
                 productName: $product->name(),
-                planId: $billingPlan->id,
                 amount: $billingPlan->prices->getAmount($basket->currency),
                 billingInterval: $billingPlan->billingInterval,
                 trialPeriod: $billingPlan->trialPeriod,
                 additional: $billingPlan->data,
+                gatewayEntities: $billingPlan->gatewayEntities,
             );
 
         } else {
             $basket->lineItems[] = new LineItem(
+                id: Uuid::uuid4(),
                 productId: $product->id(),
                 productName: $product->name(),
                 taxable: $product->taxable(),

@@ -123,7 +123,7 @@ class AddToBasketActionTest extends TestCase
         $this->assertCount(0, $this->basket->lineItems);
         $this->assertCount(1, $this->basket->billingItems);
         $this->assertEquals('product-recurrent-billing', $this->basket->billingItems[0]->productId);
-        $this->assertEquals('1-month', $this->basket->billingItems[0]->planId);
+        $this->assertEquals('1-month', $this->basket->billingItems[0]->billingPlanId);
         $this->assertEquals(100, $this->basket->billingItems[0]->amount);
         $this->assertEquals('1:month', (string)$this->basket->billingItems[0]->billingInterval);
 

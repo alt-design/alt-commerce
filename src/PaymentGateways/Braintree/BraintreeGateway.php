@@ -4,66 +4,155 @@ namespace AltDesign\AltCommerce\PaymentGateways\Braintree;
 
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\Subscription;
+use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
 use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
+use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Enum\DurationUnit;
-use AltDesign\AltCommerce\Enum\SubscriptionStatus;
-use AltDesign\AltCommerce\Enum\TransactionStatus;
-use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
+use Braintree\Exception\NotFound;
 use Braintree\Gateway;
-use Braintree\Result\Error;
-use Braintree\Result\Successful;
-use DateTimeImmutable;
 
 class BraintreeGateway implements PaymentGateway
 {
+    protected const NAME = 'name';
 
     public function __construct(
-        protected Gateway $gateway,
+        protected TransactionFactory $transactionFactory,
+        protected SubscriptionFactory $subscriptionFactory,
+        protected BraintreeApiClient $client,
         protected string $currency
     )
     {
 
     }
-
     public function createPaymentNonceAuthToken(): string
     {
-        return $this->gateway->clientToken()->generate();
+        return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate());
     }
 
-    public function createBillingPlan(BillingPlan $billingPlan): string
+    public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
     {
-        $response = $this->gateway
-            ->plan()
-            ->create($this->buildBillingPlanData($billingPlan));
 
-        $this->handleResponse($response);
+        $gatewayId = $billingPlan->findGatewayId(self::NAME);
 
-        return $response->plan->id;
-    }
+        if (!empty($gatewayId)) {
 
-    public function updateBillingPlan(string $id, BillingPlan $billingPlan): void
-    {
-        $data = $this->buildBillingPlanData($billingPlan);
+            try {
 
-        unset($data['billingFrequency']);
+                // grab plan to see if billing frequency has changes
+                $plan = $this->client->request(fn(Gateway $gateway) => $gateway->plan()->find($gatewayId));
 
-        $response = $this->gateway
-            ->plan()
-            ->update($id, $data);
+                if ((int)$plan->billing_frequency !== $billingPlan->billingInterval->months()) {
+                    $gatewayId = null;
+                } else {
+                    $data = $this->buildBillingPlanData($billingPlan);
+                    unset($data['billingFrequency']);
+                    $this->client->request(fn(Gateway $gateway) => $gateway->plan()->update($gatewayId, $data));
+                    return $billingPlan;
+                }
 
-        $this->handleResponse($response);
+            } catch (NotFound) {
+                // not found so might as well recreate it
+                $gatewayId = null;
+            }
+        }
+
+        if (empty($gatewayId)) {
+            $planId = $this->client
+                ->request(
+                    fn(Gateway $gateway) =>
+                        $gateway->plan()->create($this->buildBillingPlanData($billingPlan))
+                )
+                ->plan->id;
+
+            $billingPlan->setGatewayId(self::NAME, $planId);
+        }
+
+        return $billingPlan;
     }
 
     /**
-     * @param BillingPlan $billingPlan
+     * @param array<string, mixed> $data
+     */
+    public function saveCustomer(Customer $customer, array $data): string
+    {
+        $id = $customer->findGatewayId(self::NAME);
+        if (empty($id)) {
+            $id = $this->client->request(fn(Gateway $gateway) =>
+                $gateway
+                    ->customer()
+                    ->create([
+                        'email' => $customer->customerEmail()
+                    ])
+            )->customer->id;
+        }
+
+        return $id;
+    }
+
+    public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
+    {
+        $result = $this->client->request(fn(Gateway $gateway) =>
+            $gateway->paymentMethod()->create([
+                'customerId' => $gatewayCustomerId,
+                'paymentMethodNonce' => $paymentNonce,
+                'options' => [
+                    'verifyCard' => true
+                ]
+            ])
+        );
+        return $result->paymentMethod->token;
+    }
+
+    public function createCharge(CreatePaymentRequest $request): Transaction
+    {
+        if (empty($request->billingAddress)) {
+            throw new PaymentGatewayException('Billing address is required for braintree');
+        }
+
+        $params = [
+            'customerId' => $request->gatewayCustomerId,
+            'paymentMethodToken' => $request->gatewayPaymentMethodToken,
+            'amount' => $request->amount,
+            'options' => [
+                'submitForSettlement' => false
+            ],
+            'billing' => $this->buildAddress($request->billingAddress),
+        ];
+
+        if ($request->descriptor) {
+            $params['descriptor']['name'] = $request->descriptor;
+        }
+
+        $result = $this->client->request(fn(Gateway $gateway) =>
+            $gateway->transaction()->sale($params)
+        );
+
+        return $this->transactionFactory->create($result->transaction, self::NAME);
+    }
+
+    public function createSubscription(CreateSubscriptionRequest $request): Subscription
+    {
+        $result = $this->client->request(fn(Gateway $gateway) =>
+            $gateway->subscription()->create([
+                'paymentMethodToken' => $request->gatewayPaymentMethodToken,
+                'planId' => $request->gatewayPlanId,
+                'options' => [
+                    'startImmediately' => true
+                ]
+            ])
+        );
+
+        return $this->subscriptionFactory->create($result, self::NAME);
+    }
+
+    /**
      * @return array<string,mixed>
-     * @throws \AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException
      */
     protected function buildBillingPlanData(BillingPlan $billingPlan): array
     {
@@ -90,129 +179,6 @@ class BraintreeGateway implements PaymentGateway
 
     }
 
-    /**
-     * @param Customer $customer
-     * @param array<string, mixed> $data
-     * @return string
-     */
-    public function saveCustomer(Customer $customer, array $data): string
-    {
-        $id = $customer->customerAdditionalData()['braintree_id'] ?? null;
-
-        if (empty($id)) {
-            $id = $this->gateway
-                ->customer()
-                    ->create([
-                    'email' => $customer->customerEmail()
-                ])
-                ->customer
-                ->id;
-        }
-
-        return $id;
-    }
-
-    public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
-    {
-        $result = $this->gateway->paymentMethod()->create([
-            'customerId' => $gatewayCustomerId,
-            'paymentMethodNonce' => $paymentNonce,
-            'options' => [
-                'verifyCard' => true
-            ]
-        ]);
-
-        return $result->paymentMethod->token;
-    }
-
-    public function createCharge(CreatePaymentRequest $request): Transaction
-    {
-        if (empty($request->billingAddress)) {
-            throw new PaymentGatewayException('Billing address is required');
-        }
-
-        $params = [
-            'customerId' => $request->gatewayCustomerId,
-            'paymentMethodToken' => $request->gatewayPaymentMethodToken,
-            'amount' => $request->amount,
-            'options' => [
-                'submitForSettlement' => false
-            ],
-            'billing' => $this->buildAddress($request->billingAddress),
-        ];
-
-        if ($request->descriptor) {
-            $params['descriptor']['name'] = $request->descriptor;
-        }
-
-        $result = $this->gateway
-            ->transaction()
-            ->sale($params);
-
-        if (!$result->success) {
-            throw new PaymentGatewayException('Braintree payment failed with error'.$result->message);
-        }
-
-        return new Transaction(
-            type: $this->matchType($result->transaction->type),
-            status: $this->matchStatus($result->transaction->status),
-            currency: $result->transaction->currencyIsoCode,
-            transactionId: $result->transaction->id,
-            gateway: 'braintree',
-            amount: intval($result->transaction->amount) * 100,
-            createdAt: DateTimeImmutable::createFromMutable($result->transaction->createdAt),
-            rejectionReason: $result->transaction->gatewayRejectionReason,
-            additional: $result->transaction->toArray(),
-        );
-    }
-
-    public function createSubscription(CreateSubscriptionRequest $request): Subscription
-    {
-        $result = $this->gateway->subscription()->create([
-                'paymentMethodToken' => $request->gatewayPaymentMethodToken,
-                'planId' => $request->gatewayPlanId,
-                'options' => [
-                    'startImmediately' => true
-                ]
-            ]
-        );
-
-        $this->handleResponse($result);
-
-        return new Subscription(
-            subscriptionId: $result->subscription->id,
-            gateway: 'braintree',
-            status: SubscriptionStatus::from(strtolower($result->subscription->status)),
-            createdAt: DateTimeImmutable::createFromMutable($result->subscription->createdAt),
-            additional: $result->subscription->toArray()
-        );
-    }
-
-    protected function handleResponse(Successful|Error $response): void
-    {
-        if ($response instanceof Error) {
-            // todo better exception that can take multiple errors.
-            throw new PaymentGatewayException($response->message);
-        }
-    }
-
-    protected function matchType(string $type): TransactionType
-    {
-        return match($type) {
-            'sale' => TransactionType::SALE,
-            default =>  throw new PaymentGatewayException("Unknown transaction type $type")
-        };
-    }
-
-    protected function matchStatus(string $status): TransactionStatus
-    {
-        return match($status) {
-            'authorizing', 'settlement_pending','settling' => TransactionStatus::PENDING,
-            'authorization_expired', 'voided', 'settlement_declined',  'failed', 'gateway_rejected', 'processor_declined' => TransactionStatus::FAILED,
-            'settled', 'submitted_for_settlement'  => TransactionStatus::SETTLED,
-            default =>  throw new PaymentGatewayException("Unknown transaction status $status")
-        };
-    }
 
     /**
      * @param Address|null $address

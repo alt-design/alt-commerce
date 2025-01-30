@@ -23,6 +23,15 @@ class Duration
         };
     }
 
+    public function months(): int
+    {
+        return match($this->unit) {
+            DurationUnit::MONTH => $this->amount,
+            DurationUnit::YEAR => $this->amount * 12,
+            default => 0,
+        };
+    }
+
     public function __toString()
     {
         return $this->amount.':'.$this->unit->value;
