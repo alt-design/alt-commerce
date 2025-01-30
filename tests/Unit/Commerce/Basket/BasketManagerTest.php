@@ -49,7 +49,9 @@ class BasketManagerTest extends TestCase
                         prices: new PriceCollection([
                             new Money(5000, 'GBP')
                         ]),
-                        billingInterval: new Duration(1, DurationUnit::MONTH)
+                        billingInterval: new Duration(1, DurationUnit::MONTH),
+                        createdAt: new \DateTimeImmutable(),
+                        updatedAt: new \DateTimeImmutable(),
                     )
                 ]
             ));

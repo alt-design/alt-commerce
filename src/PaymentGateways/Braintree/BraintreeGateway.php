@@ -16,6 +16,7 @@ use AltDesign\AltCommerce\Enum\DurationUnit;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use Braintree\Exception\NotFound;
 use Braintree\Gateway;
+use Braintree\Plan;
 
 class BraintreeGateway implements PaymentGateway
 {
@@ -44,12 +45,19 @@ class BraintreeGateway implements PaymentGateway
 
             try {
 
+                /**
+                 * @var Plan $plan
+                 */
+
+                $updatedAt = $plan->updatedAt;
+
                 // grab plan to see if billing frequency has changes
                 $plan = $this->client->request(fn(Gateway $gateway) => $gateway->plan()->find($gatewayId));
 
                 if ((int)$plan->billing_frequency !== $billingPlan->billingInterval->months()) {
                     $gatewayId = null;
                 } else {
+                    // ensure plan has been changed based on update
                     $data = $this->buildBillingPlanData($billingPlan);
                     unset($data['billingFrequency']);
                     $this->client->request(fn(Gateway $gateway) => $gateway->plan()->update($gatewayId, $data));
@@ -71,6 +79,7 @@ class BraintreeGateway implements PaymentGateway
                 ->plan->id;
 
             $billingPlan->setGatewayId($this->name, $planId);
+            $billingPlan->updatedAt = new \DateTimeImmutable();
         }
 
         return $billingPlan;

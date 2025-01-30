@@ -24,7 +24,9 @@ class RecurrentBillingSchemaTest extends TestCase
                         new Money(1500, 'USD'),
                         new Money(1300, 'EUR')
                     ]),
-                    billingInterval: new Duration(1, DurationUnit::MONTH)
+                    billingInterval: new Duration(1, DurationUnit::MONTH),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
                 new BillingPlan(
                     id: '6-month',
@@ -34,7 +36,9 @@ class RecurrentBillingSchemaTest extends TestCase
                         new Money(7500, 'USD'),
                         new Money(6500, 'EUR')
                     ]),
-                    billingInterval: new Duration(6, DurationUnit::MONTH)
+                    billingInterval: new Duration(6, DurationUnit::MONTH),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
                 new BillingPlan(
                     id: '1-year',
@@ -44,7 +48,9 @@ class RecurrentBillingSchemaTest extends TestCase
                         new Money(15000, 'USD'),
                         new Money(12000, 'EUR')
                     ]),
-                    billingInterval: new Duration(1, DurationUnit::YEAR)
+                    billingInterval: new Duration(1, DurationUnit::YEAR),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
                 new BillingPlan(
                     id: '3-year',
@@ -52,7 +58,9 @@ class RecurrentBillingSchemaTest extends TestCase
                     prices: new PriceCollection([
                         new Money(25200, 'GBP'),
                     ]),
-                    billingInterval: new Duration(3, DurationUnit::YEAR)
+                    billingInterval: new Duration(3, DurationUnit::YEAR),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
                 new BillingPlan(
                     id: '5-year',
@@ -60,7 +68,9 @@ class RecurrentBillingSchemaTest extends TestCase
                     prices: new PriceCollection([
                         new Money(100000, 'AUD'),
                     ]),
-                    billingInterval: new Duration(5, DurationUnit::YEAR)
+                    billingInterval: new Duration(5, DurationUnit::YEAR),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
             ]
         );
@@ -110,7 +120,9 @@ class RecurrentBillingSchemaTest extends TestCase
                         new Money(1000, 'GBP'),
                         new Money(1300, 'EUR')
                     ]),
-                    billingInterval: new Duration(1, DurationUnit::MONTH)
+                    billingInterval: new Duration(1, DurationUnit::MONTH),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
                 new BillingPlan(
                     id: '6-month',
@@ -118,7 +130,9 @@ class RecurrentBillingSchemaTest extends TestCase
                     prices: new PriceCollection([
                         new Money(7500, 'USD'),
                     ]),
-                    billingInterval: new Duration(6, DurationUnit::MONTH)
+                    billingInterval: new Duration(6, DurationUnit::MONTH),
+                    createdAt: new \DateTimeImmutable(),
+                    updatedAt: new \DateTimeImmutable(),
                 ),
             ]
         );
@@ -138,7 +152,9 @@ class RecurrentBillingSchemaTest extends TestCase
             prices: new PriceCollection([
                 new Money(1000, 'GBP'),
             ]),
-            billingInterval: new Duration(1, DurationUnit::MONTH)
+            billingInterval: new Duration(1, DurationUnit::MONTH),
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
         );
 
         $plan2 = new BillingPlan(
@@ -148,7 +164,9 @@ class RecurrentBillingSchemaTest extends TestCase
                 new Money(1000, 'GBP'),
                 new Money(1000, 'EUR')
             ]),
-            billingInterval: new Duration(1, DurationUnit::MONTH)
+            billingInterval: new Duration(1, DurationUnit::MONTH),
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
         );
 
         $plan3 = new BillingPlan(
@@ -157,7 +175,9 @@ class RecurrentBillingSchemaTest extends TestCase
             prices: new PriceCollection([
                 new Money(1000, 'USD')
             ]),
-            billingInterval: new Duration(1, DurationUnit::MONTH)
+            billingInterval: new Duration(1, DurationUnit::MONTH),
+            createdAt: new \DateTimeImmutable(),
+            updatedAt: new \DateTimeImmutable(),
         );
 
         $schema = new RecurrentBillingSchema(plans: [$plan1, $plan2, $plan3]);

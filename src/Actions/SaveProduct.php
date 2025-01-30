@@ -22,15 +22,19 @@ class SaveProduct
         $price = $product->price();
         if ($price instanceof RecurrentBillingSchema) {
             foreach ($price->getPlans() as $plan) {
-                foreach ($plan->prices as $price) {
+                $updatedAt = $plan->updatedAt;
 
+                foreach ($plan->prices as $price) {
                     $plan = $this->gatewayBroker
                         ->currency($price->currency)
                         ->gateway()
                         ->saveBillingPlan($plan);
+                }
 
+                if ($plan->updatedAt > $updatedAt) {
                     $this->productRepository->saveBillingPlan($product->id(), $plan);
                 }
+
             }
         }
     }

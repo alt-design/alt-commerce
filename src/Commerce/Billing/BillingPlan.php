@@ -21,6 +21,8 @@ class BillingPlan
         public string          $name,
         public PriceCollection $prices,
         public Duration        $billingInterval,
+        public \DateTimeImmutable $createdAt,
+        public \DateTimeImmutable $updatedAt,
         public Duration|null   $trialPeriod = null,
         public array           $data = [],
         public array           $gatewayEntities = [],

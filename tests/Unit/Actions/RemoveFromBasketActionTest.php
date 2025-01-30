@@ -56,7 +56,9 @@ class RemoveFromBasketActionTest extends TestCase
                         prices: new PriceCollection([
                             new Money(200, 'GBP')
                         ]),
-                        billingInterval: new Duration(1, DurationUnit::MONTH)
+                        billingInterval: new Duration(1, DurationUnit::MONTH),
+                        createdAt: new \DateTimeImmutable(),
+                        updatedAt: new \DateTimeImmutable(),
                     )
                 ]
             )

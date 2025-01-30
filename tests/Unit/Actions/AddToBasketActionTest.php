@@ -106,7 +106,9 @@ class AddToBasketActionTest extends TestCase
                         prices: new PriceCollection([
                             new Money(100, 'USD'),
                         ]),
-                        billingInterval: new Duration(1, DurationUnit::MONTH)
+                        billingInterval: new Duration(1, DurationUnit::MONTH),
+                        createdAt: new \DateTimeImmutable(),
+                        updatedAt: new \DateTimeImmutable(),
                     )
                 ]
             )
