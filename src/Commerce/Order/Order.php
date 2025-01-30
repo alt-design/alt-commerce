@@ -13,10 +13,13 @@ use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\DiscountItem;
 use AltDesign\AltCommerce\Enum\OrderStatus;
+use AltDesign\AltCommerce\Traits\HasGatewayEntity;
 use DateTimeImmutable;
 
 class Order
 {
+
+    use HasGatewayEntity;
 
     /**
      * @param LineItem[] $lineItems
@@ -55,6 +58,7 @@ class Order
         public array $transactions = [],
         public array $subscriptions = [],
         public array $additional = [],
+        public array $gatewayEntities = [],
     )
     {
 

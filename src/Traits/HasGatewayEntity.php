@@ -30,14 +30,14 @@ trait HasGatewayEntity
      */
     public function setGatewayId(string $gateway, string $id, array $context = []): void
     {
-        $this->removeGatewayId($gateway);
+        $this->removeGatewayId($gateway, $context);
         $this->gatewayEntities[] = new GatewayEntity($gateway, $id, $context);
     }
 
-    public function removeGatewayId(string $gateway): void
+    public function removeGatewayId(string $gateway, array $context = []): void
     {
         foreach ($this->gatewayEntities as $key => $gatewayEntity) {
-            if ($gatewayEntity->gateway === $gateway) {
+            if ($gatewayEntity->gateway === $gateway && json_encode($gatewayEntity->context) === json_encode($context)) {
                 unset($this->gatewayEntities[$key]);
             }
         }
