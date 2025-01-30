@@ -51,7 +51,7 @@ class BraintreeGateway implements PaymentGateway
 
                 $plan = $this->client->request(fn(Gateway $gateway) => $gateway->plan()->find($gatewayId));
 
-                if ((int)$plan->billing_frequency !== $billingPlan->billingInterval->months()) {
+                if ((int)$plan->billingFrequency !== $billingPlan->billingInterval->months()) {
                     $gatewayId = null;
                 } else {
 
@@ -157,7 +157,7 @@ class BraintreeGateway implements PaymentGateway
             ])
         );
 
-        return $this->subscriptionFactory->createFromGateway('braintree', $this->name, $result);
+        return $this->subscriptionFactory->createFromGateway('braintree', $this->name, $result->subscription);
     }
 
     /**
