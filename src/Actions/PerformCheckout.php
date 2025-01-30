@@ -89,7 +89,7 @@ class PerformCheckout
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
-                    gatewayPlanId: $item->getGatewayId($config->name()),
+                    gatewayPlanId: $item->getGatewayId($config->name(), ['currency' => $order->currency]),
                 )
             );
         }
