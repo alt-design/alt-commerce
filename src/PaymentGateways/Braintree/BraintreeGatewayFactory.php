@@ -14,14 +14,11 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
 {
 
     /**
-     * @param string $currency
      * @param array<string, mixed> $config
-     * @return PaymentGateway
-     * @throws InvalidConfigException
      */
     public function create(string $name, string $currency, array $config): PaymentGateway
     {
-        $this->validateConfig($config, ['merchant_id', 'public_key', 'private_key', 'mode']);
+        $this->validateConfig($config, ['merchant_id', 'public_key', 'private_key', 'mode', 'merchant_account_id']);
 
         $gateway = new Gateway([
             'environment' => $config['mode'],
@@ -30,9 +27,12 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
             'privateKey' => $config['private_key']
         ]);
 
+        $merchantAccountId = $config['merchant_accounts'][$currency] ?? throw new InvalidConfigException('Merchant account id not specified for '.$currency);
+
         return new BraintreeGateway(
             name: $name,
             currency: $currency,
+            merchantAccountId: $merchantAccountId,
             transactionFactory: new TransactionFactory(),
             subscriptionFactory: new SubscriptionFactory(),
             client: new BraintreeApiClient(

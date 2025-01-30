@@ -23,6 +23,7 @@ class BraintreeGateway implements PaymentGateway
     public function __construct(
         protected string $name,
         protected string $currency,
+        protected string $merchantAccountId,
         protected TransactionFactory $transactionFactory,
         protected SubscriptionFactory $subscriptionFactory,
         protected BraintreeApiClient $client,
@@ -150,7 +151,9 @@ class BraintreeGateway implements PaymentGateway
         $result = $this->client->request(fn(Gateway $gateway) =>
             $gateway->subscription()->create([
                 'paymentMethodToken' => $request->gatewayPaymentMethodToken,
+                'merchantAccountId' => $this->merchantAccountId,
                 'planId' => $request->gatewayPlanId,
+                'neverExpires' => true,
                 'options' => [
                     'startImmediately' => true
                 ]
