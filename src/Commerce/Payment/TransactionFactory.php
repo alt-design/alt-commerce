@@ -10,16 +10,15 @@ use Ramsey\Uuid\Uuid;
 
 class TransactionFactory
 {
-    public function create(mixed $data, string $gateway = null): Transaction
+    public function createFromGateway(string $driver, string $gateway, mixed $data): Transaction
     {
-        return match ($gateway) {
-            'braintree' => $this->fromBraintreeTransaction($data),
+        return match ($driver) {
+            'braintree' => $this->fromBraintreeTransaction($gateway, $data),
             default => throw new \Exception('Transaction gateway not supported')
         };
-        
     }
     
-    protected function fromBraintreeTransaction(\Braintree\Transaction $transaction): Transaction
+    protected function fromBraintreeTransaction(string $gateway, \Braintree\Transaction $transaction): Transaction
     {
         return new Transaction(
             id: Uuid::uuid4(),
@@ -31,7 +30,7 @@ class TransactionFactory
             rejectionReason: $transaction->gatewayRejectionReason,
             additional: $transaction->toArray(),
             gatewayEntities: [
-                new GatewayEntity('braintree', $transaction->id)
+                new GatewayEntity($gateway, $transaction->id)
             ]
         );
     }

@@ -87,7 +87,7 @@ class PerformCheckout
                 new CreateSubscriptionRequest(
                     gatewayPaymentMethodToken: $gatewayPaymentMethodToken,
                     gatewayCustomerId: $gatewayCustomerId,
-                    gatewayPlanId: $item->getGatewayId($config->driver()),
+                    gatewayPlanId: $item->getGatewayId($config->name()),
                 )
             );
         }

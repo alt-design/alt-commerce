@@ -8,15 +8,15 @@ use Ramsey\Uuid\Uuid;
 
 class SubscriptionFactory
 {
-    public function create(mixed $data, string $gateway = null): Subscription
+    public function createFromGateway(string $driver, string $gateway, mixed $data): Subscription
     {
-        return match ($gateway) {
-            'braintree' => $this->fromBraintreeSubscription($data),
+        return match ($driver) {
+            'braintree' => $this->fromBraintreeSubscription($gateway, $data),
             default => throw new \Exception('Subscription gateway not supported')
         };
     }
 
-    protected function fromBraintreeSubscription(\Braintree\Subscription $subscription): Subscription
+    protected function fromBraintreeSubscription(string $gateway, \Braintree\Subscription $subscription): Subscription
     {
         return new Subscription(
             id: Uuid::uuid4(),
@@ -24,7 +24,7 @@ class SubscriptionFactory
             createdAt: \DateTimeImmutable::createFromMutable($subscription->createdAt),
             additional: $subscription->toArray(),
             gatewayEntities: [
-                new GatewayEntity('braintree', $subscription->id)
+                new GatewayEntity($gateway, $subscription->id)
             ]
         );
     }

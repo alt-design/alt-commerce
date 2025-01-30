@@ -65,7 +65,7 @@ class GatewayBroker
                 $this->gateways[$currency] = new GatewayConfig(
                     name: $name,
                     driver: $config['driver'],
-                    gateway: $driver->factory()->create($currency, $config)
+                    gateway: $driver->factory()->create($name, $currency, $config)
                 );
             }
         }

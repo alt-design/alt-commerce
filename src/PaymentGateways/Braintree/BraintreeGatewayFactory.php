@@ -19,7 +19,7 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
      * @return PaymentGateway
      * @throws InvalidConfigException
      */
-    public function create(string $currency, array $config): PaymentGateway
+    public function create(string $name, string $currency, array $config): PaymentGateway
     {
         $this->validateConfig($config, ['merchant_id', 'public_key', 'private_key', 'mode']);
 
@@ -31,12 +31,13 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
         ]);
 
         return new BraintreeGateway(
+            name: $name,
+            currency: $currency,
             transactionFactory: new TransactionFactory(),
             subscriptionFactory: new SubscriptionFactory(),
             client: new BraintreeApiClient(
                 gateway: $gateway
             ),
-            currency: $currency,
         );
 
     }

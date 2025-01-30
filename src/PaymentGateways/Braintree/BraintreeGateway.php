@@ -19,17 +19,17 @@ use Braintree\Gateway;
 
 class BraintreeGateway implements PaymentGateway
 {
-    protected const NAME = 'name';
-
     public function __construct(
+        protected string $name,
+        protected string $currency,
         protected TransactionFactory $transactionFactory,
         protected SubscriptionFactory $subscriptionFactory,
         protected BraintreeApiClient $client,
-        protected string $currency
     )
     {
 
     }
+
     public function createPaymentNonceAuthToken(): string
     {
         return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate());
@@ -38,7 +38,7 @@ class BraintreeGateway implements PaymentGateway
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
     {
 
-        $gatewayId = $billingPlan->findGatewayId(self::NAME);
+        $gatewayId = $billingPlan->findGatewayId($this->name);
 
         if (!empty($gatewayId)) {
 
@@ -70,7 +70,7 @@ class BraintreeGateway implements PaymentGateway
                 )
                 ->plan->id;
 
-            $billingPlan->setGatewayId(self::NAME, $planId);
+            $billingPlan->setGatewayId($this->name, $planId);
         }
 
         return $billingPlan;
@@ -81,7 +81,7 @@ class BraintreeGateway implements PaymentGateway
      */
     public function saveCustomer(Customer $customer, array $data): string
     {
-        $id = $customer->findGatewayId(self::NAME);
+        $id = $customer->findGatewayId($this->name);
         if (empty($id)) {
             $id = $this->client->request(fn(Gateway $gateway) =>
                 $gateway
@@ -133,7 +133,7 @@ class BraintreeGateway implements PaymentGateway
             $gateway->transaction()->sale($params)
         );
 
-        return $this->transactionFactory->create($result->transaction, self::NAME);
+        return $this->transactionFactory->createFromGateway('braintree', $this->name, $result->transaction);
     }
 
     public function createSubscription(CreateSubscriptionRequest $request): Subscription
@@ -148,7 +148,7 @@ class BraintreeGateway implements PaymentGateway
             ])
         );
 
-        return $this->subscriptionFactory->create($result, self::NAME);
+        return $this->subscriptionFactory->createFromGateway('braintree', $this->name, $result);
     }
 
     /**
@@ -179,9 +179,7 @@ class BraintreeGateway implements PaymentGateway
 
     }
 
-
     /**
-     * @param Address|null $address
      * @return array<string, string|null>|null
      */
     protected function buildAddress(Address|null $address): array|null

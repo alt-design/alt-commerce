@@ -55,7 +55,7 @@ class FakeGateway implements PaymentGateway, PaymentGatewayDriver, PaymentGatewa
         return new self();
     }
 
-    public function create(string $currency, array $config): PaymentGateway
+    public function create(string $name, string $currency, array $config): PaymentGateway
     {
         return new self();
     }
