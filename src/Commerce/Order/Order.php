@@ -18,9 +18,6 @@ use DateTimeImmutable;
 
 class Order
 {
-
-    use HasGatewayEntity;
-
     /**
      * @param LineItem[] $lineItems
      * @param TaxItem[] $taxItems
@@ -57,8 +54,7 @@ class Order
         public Address|null $shippingAddress = null,
         public array $transactions = [],
         public array $subscriptions = [],
-        public array $additional = [],
-        public array $gatewayEntities = [],
+        public array $additional = []
     )
     {
 

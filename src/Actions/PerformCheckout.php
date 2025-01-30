@@ -60,7 +60,7 @@ class PerformCheckout
         $gatewayCustomerId = $gateway->saveCustomer($order->customer, []);
         $gatewayPaymentMethodToken = $gateway->createPaymentMethod($gatewayCustomerId, $paymentNonce);
 
-        $order->setGatewayId($config->name(), $gatewayCustomerId, ['type' => 'customer']);
+        $order->customer->setGatewayId($config->name(), $gatewayCustomerId);
 
         if (!empty($order->total)) {
             $transaction = $gateway->createCharge(
