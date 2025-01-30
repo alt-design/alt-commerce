@@ -78,7 +78,7 @@ class BraintreeGateway implements PaymentGateway
                 )
                 ->plan->id;
 
-            $billingPlan->setGatewayId($this->name, $planId);
+            $billingPlan->setGatewayId($this->name, $planId, ['currency' => $this->currency]);
             $billingPlan->updatedAt = new \DateTimeImmutable();
         }
 

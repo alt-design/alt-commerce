@@ -25,10 +25,13 @@ trait HasGatewayEntity
         return $this->findGatewayId($gateway) ??  throw new \Exception('Unable to find gateway id for '.$gateway);
     }
 
-    public function setGatewayId(string $gateway, string $id): void
+    /**
+     * @param array<string, string> $context
+     */
+    public function setGatewayId(string $gateway, string $id, array $context = []): void
     {
         $this->removeGatewayId($gateway);
-        $this->gatewayEntities[] = new GatewayEntity($gateway, $id);
+        $this->gatewayEntities[] = new GatewayEntity($gateway, $id, $context);
     }
 
     public function removeGatewayId(string $gateway): void
