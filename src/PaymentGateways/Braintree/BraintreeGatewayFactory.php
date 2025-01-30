@@ -18,7 +18,7 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
      */
     public function create(string $name, string $currency, array $config): PaymentGateway
     {
-        $this->validateConfig($config, ['merchant_id', 'public_key', 'private_key', 'mode', 'merchant_account_id']);
+        $this->validateConfig($config, ['merchant_id', 'public_key', 'private_key', 'mode', 'merchant_accounts']);
 
         $gateway = new Gateway([
             'environment' => $config['mode'],

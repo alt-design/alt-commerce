@@ -40,7 +40,7 @@ class BraintreeGateway implements PaymentGateway
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
     {
 
-        $gatewayId = $billingPlan->findGatewayId($this->name);
+        $gatewayId = $billingPlan->findGatewayId($this->name,  ['currency' => $this->currency]);
 
         if (!empty($gatewayId)) {
 

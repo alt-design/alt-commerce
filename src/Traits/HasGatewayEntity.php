@@ -10,19 +10,25 @@ use AltDesign\AltCommerce\Support\GatewayEntity;
 trait HasGatewayEntity
 {
 
-    public function findGatewayId(string $gateway): string|null
+    /**
+     * @param array<string, string> $context
+     */
+    public function findGatewayId(string $gateway, array $context = []): string|null
     {
         foreach ($this->gatewayEntities as $entity) {
-            if ($entity->gateway === $gateway) {
+            if ($entity->gateway === $gateway && $this->doesContextMatch($entity->context, $context)) {
                 return $entity->gatewayId;
             }
         }
         return null;
     }
 
-    public function getGatewayId(string $gateway): string
+    /**
+     * @param array<string, string> $context
+     */
+    public function getGatewayId(string $gateway, array $context = []): string
     {
-        return $this->findGatewayId($gateway) ??  throw new \Exception('Unable to find gateway id for '.$gateway);
+        return $this->findGatewayId($gateway, $context) ??  throw new \Exception('Unable to find gateway id for '.$gateway);
     }
 
     /**
@@ -37,9 +43,17 @@ trait HasGatewayEntity
     public function removeGatewayId(string $gateway, array $context = []): void
     {
         foreach ($this->gatewayEntities as $key => $gatewayEntity) {
-            if ($gatewayEntity->gateway === $gateway && json_encode($gatewayEntity->context) === json_encode($context)) {
+            if ($gatewayEntity->gateway === $gateway && $this->doesContextMatch($gatewayEntity->context, $context)) {
                 unset($this->gatewayEntities[$key]);
             }
         }
+    }
+
+    protected function doesContextMatch(array $a, array $b): bool
+    {
+        ksort($a);
+        ksort($b);
+
+        return json_encode($a) === json_encode($b);
     }
 }
