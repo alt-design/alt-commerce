@@ -128,9 +128,9 @@ class BraintreeGateway implements PaymentGateway
         $params = [
             'customerId' => $request->gatewayCustomerId,
             'paymentMethodToken' => $request->gatewayPaymentMethodToken,
-            'amount' => $request->amount,
+            'amount' => $request->amount / 100,
             'options' => [
-                'submitForSettlement' => false
+                'submitForSettlement' => true
             ],
             'billing' => $this->buildAddress($request->billingAddress),
         ];
