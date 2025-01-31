@@ -40,6 +40,9 @@ trait HasGatewayEntity
         $this->gatewayEntities[] = new GatewayEntity($gateway, $id, $context);
     }
 
+    /**
+     * @param array<string, string> $context
+     */
     public function removeGatewayId(string $gateway, array $context = []): void
     {
         foreach ($this->gatewayEntities as $key => $gatewayEntity) {
@@ -49,6 +52,10 @@ trait HasGatewayEntity
         }
     }
 
+    /**
+     * @param array<string, string> $a
+     * @param array<string, string> $b
+     */
     protected function doesContextMatch(array $a, array $b): bool
     {
         ksort($a);

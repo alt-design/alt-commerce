@@ -8,6 +8,8 @@ use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
+use AltDesign\AltCommerce\Contracts\Settings;
+use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
@@ -15,6 +17,8 @@ trait CommerceHelper
 {
     protected $basket;
     protected $basketRepository;
+    protected $settings;
+    protected $settingsRepository;
 
     protected function createBasket(string $currency = 'GBP', string $id = 'test-basket', string $countryCode = 'GB')
     {
@@ -79,5 +83,21 @@ trait CommerceHelper
         );
         $this->basket->billingItems[] = $billingItem;
         return $billingItem;
+    }
+
+    protected function createSettings(
+        string $tradingName = 'AltCommerce',
+        string $defaultCountryCode = 'USD',
+        string $defaultCurrency = 'USD',
+        array $supportedCurrencies = ['USD', 'GBP']
+    ): void
+    {
+        $this->settings = Mockery::mock(Settings::class);
+        $this->settings->allows()->tradingName()->andReturn($defaultCountryCode)->byDefault();
+        $this->settings->allows()->defaultCountryCode()->andReturn($tradingName)->byDefault();
+        $this->settings->allows()->defaultCurrency()->andReturn($defaultCurrency)->byDefault();
+        $this->settings->allows()->supportedCurrencies()->andReturn($supportedCurrencies)->byDefault();
+        $this->settingsRepository = Mockery::mock(SettingsRepository::class);
+        $this->settingsRepository->allows()->get()->andReturn($this->settings);
     }
 }

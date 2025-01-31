@@ -125,11 +125,11 @@ class PerformCheckout
     {
         $settings = $this->settingsRepository->get();
         $replacements = [
-            '{tradingName}' => $settings->tradingName,
+            '{tradingName}' => $settings->tradingName(),
             '{orderNumber}' => $orderNumber
         ];
 
-        $description =  str_replace(array_keys($replacements), array_values($replacements), $settings->statementDescriptor);
+        $description =  str_replace(array_keys($replacements), array_values($replacements), $settings->statementDescriptor());
         return substr($description, 0, 22);
     }
 }

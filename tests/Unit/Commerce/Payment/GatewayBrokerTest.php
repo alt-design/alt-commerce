@@ -19,6 +19,9 @@ class GatewayBrokerTest extends TestCase
                     'driver' => 'braintree',
                     'mode' => 'sandbox',
                     'currency' => 'GBP',
+                    'merchant_accounts' => [
+                        'GBP' => '...merchant_account_id...'
+                    ],
                     'merchant_id' => '...merchant_id...',
                     'public_key' => '...public_key...',
                     'private_key' => '...private_key...'
@@ -40,6 +43,9 @@ class GatewayBrokerTest extends TestCase
                     'driver' => 'braintree',
                     'mode' => 'sandbox',
                     'currency' => 'GBP',
+                    'merchant_accounts' => [
+                        'GBP' => '...merchant_account_id...'
+                    ],
                     'merchant_id' => '...merchant_id...',
                     'public_key' => '...public_key...',
                     'private_key' => '...private_key...'

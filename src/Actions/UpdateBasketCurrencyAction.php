@@ -29,7 +29,7 @@ class UpdateBasketCurrencyAction
             return;
         }
 
-        if (!in_array($currency, $this->settingsRepository->get()->supportedCurrencies)) {
+        if (!in_array($currency, $this->settingsRepository->get()->supportedCurrencies())) {
             throw new CurrencyNotSupportedException("Currency $currency is not supported");
         }
 
