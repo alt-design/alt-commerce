@@ -4,16 +4,16 @@ namespace AltDesign\AltCommerce\Actions;
 
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
-use AltDesign\AltCommerce\Contracts\SettingsRepository;
+use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 
 class UpdateBasketCurrencyAction
 {
     public function __construct(
         protected BasketRepository $basketRepository,
-        protected SettingsRepository $settingsRepository,
         protected ProductRepository $productRepository,
-        protected RecalculateBasketAction $recalculateBasketAction
+        protected RecalculateBasketAction $recalculateBasketAction,
+        protected Settings $settings,
     )
     {
 
@@ -29,7 +29,7 @@ class UpdateBasketCurrencyAction
             return;
         }
 
-        if (!in_array($currency, $this->settingsRepository->get()->supportedCurrencies())) {
+        if (!in_array($currency, $this->settings->supportedCurrencies())) {
             throw new CurrencyNotSupportedException("Currency $currency is not supported");
         }
 

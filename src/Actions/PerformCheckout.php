@@ -10,7 +10,7 @@ use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
-use AltDesign\AltCommerce\Contracts\SettingsRepository;
+use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
@@ -20,11 +20,11 @@ class PerformCheckout
 
     public function __construct(
         protected BasketRepository   $basketRepository,
-        protected SettingsRepository $settingsRepository,
         protected OrderRepository    $orderRepository,
         protected OrderFactory       $orderFactory,
         protected GatewayBroker      $gatewayBroker,
-        protected EmptyBasketAction  $emptyBasketAction
+        protected EmptyBasketAction  $emptyBasketAction,
+        protected Settings $settings,
     )
     {
 
@@ -123,13 +123,12 @@ class PerformCheckout
 
     protected function getStatementDescriptor(string $orderNumber): string
     {
-        $settings = $this->settingsRepository->get();
         $replacements = [
-            '{tradingName}' => $settings->tradingName(),
+            '{tradingName}' => $this->settings->tradingName(),
             '{orderNumber}' => $orderNumber
         ];
 
-        $description =  str_replace(array_keys($replacements), array_values($replacements), $settings->statementDescriptor());
+        $description =  str_replace(array_keys($replacements), array_values($replacements), $this->settings->statementDescriptor());
         return substr($description, 0, 22);
     }
 }

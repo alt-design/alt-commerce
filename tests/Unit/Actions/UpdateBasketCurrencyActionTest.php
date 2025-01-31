@@ -6,8 +6,6 @@ use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketCurrencyAction;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
-use AltDesign\AltCommerce\Contracts\Settings;
-use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
@@ -59,9 +57,9 @@ class UpdateBasketCurrencyActionTest extends TestCase
 
         $this->action = new UpdateBasketCurrencyAction(
             basketRepository: $this->basketRepository,
-            settingsRepository: $this->settingsRepository,
             productRepository: $this->productRepository,
-            recalculateBasketAction: $this->recalculateBasketAction
+            recalculateBasketAction: $this->recalculateBasketAction,
+            settings: $this->settings
         );
     }
 

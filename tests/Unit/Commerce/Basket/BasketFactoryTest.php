@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Basket;
 
 use AltDesign\AltCommerce\Commerce\Basket\BasketFactory;
-use AltDesign\AltCommerce\Contracts\SettingsRepository;
 use AltDesign\AltCommerce\Contracts\VisitorLocator;
 use AltDesign\AltCommerce\Support\Location;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
@@ -25,7 +24,7 @@ final class BasketFactoryTest extends TestCase
         $this->visitorLocator = Mockery::mock(VisitorLocator::class);
         $this->basketFactory = new BasketFactory(
             visitorLocator: $this->visitorLocator,
-            settingsRepository: $this->settingsRepository
+            settings: $this->settings
         );
     }
 
