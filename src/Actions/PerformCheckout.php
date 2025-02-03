@@ -74,7 +74,7 @@ class PerformCheckout
             );
             if ($transaction->status === TransactionStatus::SETTLED) {
                 $order->outstanding = 0;
-                $order->status = OrderStatus::PROCESSING;
+                $order->status = OrderStatus::PENDING;
             }
 
             $order->transactions[] = $transaction;
