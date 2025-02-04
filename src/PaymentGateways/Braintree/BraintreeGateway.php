@@ -3,16 +3,18 @@
 namespace AltDesign\AltCommerce\PaymentGateways\Braintree;
 
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
-use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
-use AltDesign\AltCommerce\Commerce\Payment\CreatePaymentRequest;
-use AltDesign\AltCommerce\Commerce\Payment\CreateSubscriptionRequest;
+use AltDesign\AltCommerce\Commerce\Order\Order;
+use AltDesign\AltCommerce\Commerce\Payment\ProcessOrderRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
+use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Enum\DurationUnit;
+use AltDesign\AltCommerce\Enum\TransactionStatus;
+use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use Braintree\Exception\NotFound;
 use Braintree\Gateway;
@@ -26,10 +28,70 @@ class BraintreeGateway implements PaymentGateway
         protected string $merchantAccountId,
         protected TransactionFactory $transactionFactory,
         protected SubscriptionFactory $subscriptionFactory,
+        protected Settings $settings,
         protected BraintreeApiClient $client,
     )
     {
 
+    }
+
+    public function processOrder(ProcessOrderRequest $request): Order
+    {
+        $order = $request->order;
+
+        if (empty($order->billingAddress)) {
+            throw new PaymentGatewayException('Billing address is required for braintree');
+        }
+
+        $braintreeCustomerId = $this->saveCustomer($order->customer);
+        $braintreePaymentMethodToken = $this->createPaymentMethod($braintreeCustomerId, $request->gatewayPaymentNonce);
+
+        $order->customer->setGatewayId($request->gatewayName, $braintreeCustomerId);
+
+        if (!empty($order->total)) {
+            $result = $this->createCharge(
+                billingAddress: $order->billingAddress,
+                braintreeCustomerId: $braintreeCustomerId,
+                braintreePaymentMethodToken: $braintreePaymentMethodToken,
+                amount: $order->total / 100,
+                descriptor: $this->getStatementDescriptor($order->orderNumber)
+            );
+
+            $transaction = $this->transactionFactory->createFromGateway(
+                driver:'braintree',
+                gateway: $request->gatewayName,
+                data: $result->transaction
+            );
+
+            $order->transactions[] = $transaction;
+
+            $this->validateTransaction($transaction);
+        }
+
+        foreach ($order->billingItems as $item) {
+
+            $result = $this->createSubscription(
+                braintreePaymentMethodToken: $braintreePaymentMethodToken,
+                braintreePlanId: $item->getGatewayId($request->gatewayName, ['currency' => $order->currency]),
+            );
+
+            $transaction = $this->transactionFactory->createFromGateway(
+                driver:'braintree',
+                gateway: $request->gatewayName,
+                data: $result->transaction
+            );
+
+            $order->transactions[] = $transaction;
+            $this->validateTransaction($transaction);
+
+            $order->subscriptions[] = $this->subscriptionFactory->createFromGateway(
+                driver:'braintree',
+                gateway: $request->gatewayName,
+                data: $result->subscription
+            );
+        }
+
+        return $order;
     }
 
     public function createPaymentNonceAuthToken(): string
@@ -86,10 +148,7 @@ class BraintreeGateway implements PaymentGateway
         return $billingPlan;
     }
 
-    /**
-     * @param array<string, mixed> $data
-     */
-    public function saveCustomer(Customer $customer, array $data): string
+    protected function saveCustomer(Customer $customer): string
     {
         $id = $customer->findGatewayId($this->name);
         if (empty($id)) {
@@ -105,7 +164,7 @@ class BraintreeGateway implements PaymentGateway
         return $id;
     }
 
-    public function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
+    protected function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
     {
         $result = $this->client->request(fn(Gateway $gateway) =>
             $gateway->paymentMethod()->create([
@@ -119,48 +178,54 @@ class BraintreeGateway implements PaymentGateway
         return $result->paymentMethod->token;
     }
 
-    public function createCharge(CreatePaymentRequest $request): Transaction
-    {
-        if (empty($request->billingAddress)) {
-            throw new PaymentGatewayException('Billing address is required for braintree');
-        }
+    protected function createCharge(
+        Address $billingAddress,
+        string $braintreeCustomerId,
+        string $braintreePaymentMethodToken,
+        int $amount,
+        string|null $descriptor = null
 
+    ): mixed
+    {
         $params = [
-            'customerId' => $request->gatewayCustomerId,
-            'paymentMethodToken' => $request->gatewayPaymentMethodToken,
-            'amount' => $request->amount / 100,
+            'customerId' => $braintreeCustomerId,
+            'paymentMethodToken' => $braintreePaymentMethodToken,
+            'amount' => $amount,
             'options' => [
                 'submitForSettlement' => true
             ],
-            'billing' => $this->buildAddress($request->billingAddress),
+            'billing' => $this->buildAddress($billingAddress),
         ];
 
-        if ($request->descriptor) {
-            $params['descriptor']['name'] = $request->descriptor;
+        if ($descriptor) {
+            $params['descriptor']['name'] = $descriptor;
         }
 
-        $result = $this->client->request(fn(Gateway $gateway) =>
+        return $this->client->request(fn(Gateway $gateway) =>
             $gateway->transaction()->sale($params)
         );
-
-        return $this->transactionFactory->createFromGateway('braintree', $this->name, $result->transaction);
     }
 
-    public function createSubscription(CreateSubscriptionRequest $request): Subscription
+    protected function createSubscription(string $braintreePaymentMethodToken, string $braintreePlanId): mixed
     {
-        $result = $this->client->request(fn(Gateway $gateway) =>
+        return $this->client->request(fn(Gateway $gateway) =>
             $gateway->subscription()->create([
-                'paymentMethodToken' => $request->gatewayPaymentMethodToken,
+                'paymentMethodToken' => $braintreePaymentMethodToken,
                 'merchantAccountId' => $this->merchantAccountId,
-                'planId' => $request->gatewayPlanId,
+                'planId' => $braintreePlanId,
                 'neverExpires' => true,
                 'options' => [
                     'startImmediately' => true
                 ]
             ])
         );
+    }
 
-        return $this->subscriptionFactory->createFromGateway('braintree', $this->name, $result->subscription);
+    protected function validateTransaction(Transaction $transaction): void
+    {
+        if ($transaction->status === TransactionStatus::FAILED) {
+            throw new PaymentFailedException($transaction->rejectionReason ?? 'Unknown transaction failure');
+        }
     }
 
     /**
@@ -189,6 +254,17 @@ class BraintreeGateway implements PaymentGateway
 
         return $data;
 
+    }
+
+    protected function getStatementDescriptor(string $orderNumber): string
+    {
+        $replacements = [
+            '{tradingName}' => $this->settings->tradingName(),
+            '{orderNumber}' => $orderNumber
+        ];
+
+        $description =  str_replace(array_keys($replacements), array_values($replacements), $this->settings->statementDescriptor());
+        return substr($description, 0, 22);
     }
 
     /**

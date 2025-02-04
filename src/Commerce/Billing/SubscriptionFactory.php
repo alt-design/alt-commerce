@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Commerce\Billing;
 
 use AltDesign\AltCommerce\Enum\SubscriptionStatus;
-use AltDesign\AltCommerce\Support\GatewayEntity;
 use Ramsey\Uuid\Uuid;
 
 class SubscriptionFactory
@@ -23,9 +22,8 @@ class SubscriptionFactory
             status: SubscriptionStatus::from(strtolower($subscription->status)),
             createdAt: \DateTimeImmutable::createFromMutable($subscription->createdAt),
             additional: $subscription->toArray(),
-            gatewayEntities: [
-                new GatewayEntity($gateway, $subscription->id)
-            ]
+            gateway: $gateway,
+            gatewayId: $subscription->id,
         );
     }
 }

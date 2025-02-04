@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\Commerce\Payment;
 
 use AltDesign\AltCommerce\Contracts\PaymentGatewayDriver;
+use AltDesign\AltCommerce\Contracts\Resolver;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use AltDesign\AltCommerce\PaymentGateways\Braintree\BraintreeGatewayDriver;
 
@@ -19,7 +20,7 @@ class GatewayBroker
     /**
      * @param array<string, mixed> $config
      */
-    public function __construct(protected array $config = [])
+    public function __construct(protected Resolver $resolver, protected array $config = [])
     {
 
     }
@@ -64,7 +65,7 @@ class GatewayBroker
                 $this->gateways[$currency] = new GatewayConfig(
                     name: $name,
                     driver: $config['driver'],
-                    gateway: $driver->factory()->create($name, $currency, $config)
+                    gateway: $driver->factory($this->resolver)->create($name, $currency, $config)
                 );
             }
         }

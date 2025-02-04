@@ -4,6 +4,8 @@ namespace AltDesign\AltCommerce\Contracts;
 
 interface PaymentGatewayFactory
 {
+    public function __construct(Resolver $resolver);
+
     /**
      * @param array<string, mixed> $config
      */

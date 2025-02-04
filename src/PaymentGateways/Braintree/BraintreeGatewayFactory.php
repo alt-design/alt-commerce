@@ -7,11 +7,19 @@ use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\PaymentGatewayFactory;
+use AltDesign\AltCommerce\Contracts\Resolver;
+use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Exceptions\InvalidConfigException;
 use Braintree\Gateway;
 
 class BraintreeGatewayFactory implements PaymentGatewayFactory
 {
+    protected Resolver $resolver;
+
+    public function __construct(Resolver $resolver)
+    {
+        $this->resolver = $resolver;
+    }
 
     /**
      * @param array<string, mixed> $config
@@ -33,8 +41,9 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
             name: $name,
             currency: $currency,
             merchantAccountId: $merchantAccountId,
-            transactionFactory: new TransactionFactory(),
-            subscriptionFactory: new SubscriptionFactory(),
+            transactionFactory: $this->resolver->resolve(TransactionFactory::class),
+            subscriptionFactory: $this->resolver->resolve(SubscriptionFactory::class),
+            settings: $this->resolver->resolve(Settings::class),
             client: new BraintreeApiClient(
                 gateway: $gateway
             ),
