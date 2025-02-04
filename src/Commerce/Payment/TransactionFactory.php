@@ -5,7 +5,6 @@ namespace AltDesign\AltCommerce\Commerce\Payment;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
-use AltDesign\AltCommerce\Support\GatewayEntity;
 use Ramsey\Uuid\Uuid;
 
 class TransactionFactory
@@ -29,9 +28,8 @@ class TransactionFactory
             createdAt: \DateTimeImmutable::createFromMutable($transaction->createdAt),
             rejectionReason: $transaction->gatewayRejectionReason,
             additional: $transaction->toArray(),
-            gatewayEntities: [
-                new GatewayEntity($gateway, $transaction->id)
-            ]
+            gateway: $gateway,
+            gatewayId: $transaction->id,
         );
     }
 
