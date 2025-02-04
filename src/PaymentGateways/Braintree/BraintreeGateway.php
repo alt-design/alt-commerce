@@ -78,7 +78,7 @@ class BraintreeGateway implements PaymentGateway
             $transaction = $this->transactionFactory->createFromGateway(
                 driver:'braintree',
                 gateway: $request->gatewayName,
-                data: $result->transaction
+                data: $result->subscription->transactions[0]
             );
 
             $order->transactions[] = $transaction;
@@ -137,7 +137,7 @@ class BraintreeGateway implements PaymentGateway
             $planId = $this->client
                 ->request(
                     fn(Gateway $gateway) =>
-                        $gateway->plan()->create($this->buildBillingPlanData($billingPlan))
+                    $gateway->plan()->create($this->buildBillingPlanData($billingPlan))
                 )
                 ->plan->id;
 
@@ -153,11 +153,11 @@ class BraintreeGateway implements PaymentGateway
         $id = $customer->findGatewayId($this->name);
         if (empty($id)) {
             $id = $this->client->request(fn(Gateway $gateway) =>
-                $gateway
-                    ->customer()
-                    ->create([
-                        'email' => $customer->customerEmail()
-                    ])
+            $gateway
+                ->customer()
+                ->create([
+                    'email' => $customer->customerEmail()
+                ])
             )->customer->id;
         }
 
@@ -167,13 +167,13 @@ class BraintreeGateway implements PaymentGateway
     protected function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
     {
         $result = $this->client->request(fn(Gateway $gateway) =>
-            $gateway->paymentMethod()->create([
-                'customerId' => $gatewayCustomerId,
-                'paymentMethodNonce' => $paymentNonce,
-                'options' => [
-                    'verifyCard' => true
-                ]
-            ])
+        $gateway->paymentMethod()->create([
+            'customerId' => $gatewayCustomerId,
+            'paymentMethodNonce' => $paymentNonce,
+            'options' => [
+                'verifyCard' => true
+            ]
+        ])
         );
         return $result->paymentMethod->token;
     }
@@ -202,22 +202,22 @@ class BraintreeGateway implements PaymentGateway
         }
 
         return $this->client->request(fn(Gateway $gateway) =>
-            $gateway->transaction()->sale($params)
+        $gateway->transaction()->sale($params)
         );
     }
 
     protected function createSubscription(string $braintreePaymentMethodToken, string $braintreePlanId): mixed
     {
         return $this->client->request(fn(Gateway $gateway) =>
-            $gateway->subscription()->create([
-                'paymentMethodToken' => $braintreePaymentMethodToken,
-                'merchantAccountId' => $this->merchantAccountId,
-                'planId' => $braintreePlanId,
-                'neverExpires' => true,
-                'options' => [
-                    'startImmediately' => true
-                ]
-            ])
+        $gateway->subscription()->create([
+            'paymentMethodToken' => $braintreePaymentMethodToken,
+            'merchantAccountId' => $this->merchantAccountId,
+            'planId' => $braintreePlanId,
+            'neverExpires' => true,
+            'options' => [
+                'startImmediately' => true
+            ]
+        ])
         );
     }
 

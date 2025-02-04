@@ -17,11 +17,14 @@ class SubscriptionFactory
 
     protected function fromBraintreeSubscription(string $gateway, \Braintree\Subscription $subscription): Subscription
     {
+        $data = $subscription->toArray();
+        unset($data['transactions'], $data['paymentMethodToken'], $data['merchantAccountId']);
+
         return new Subscription(
             id: Uuid::uuid4(),
             status: SubscriptionStatus::from(strtolower($subscription->status)),
             createdAt: \DateTimeImmutable::createFromMutable($subscription->createdAt),
-            additional: $subscription->toArray(),
+            additional: $data,
             gateway: $gateway,
             gatewayId: $subscription->id,
         );
