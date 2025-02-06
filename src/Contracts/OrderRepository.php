@@ -9,4 +9,6 @@ interface OrderRepository
     public function save(Order $order): void;
 
     public function findByBasketId(string $basketId): ?Order;
+
+    public function reserveOrderNumber(): string;
 }

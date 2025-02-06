@@ -5,27 +5,21 @@ namespace AltDesign\AltCommerce\Commerce\Order;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Contracts\Customer;
-use AltDesign\AltCommerce\Contracts\OrderNumberGenerator;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use Ramsey\Uuid\Uuid;
 
 class OrderFactory
 {
-    public function __construct(protected OrderNumberGenerator $orderNumberGenerator)
-    {
-
-    }
 
     /**
-     * @param Basket $basket
-     * @param Customer $customer
      * @param array<string, mixed> $additional
-     * @return Order
      */
     public function createFromBasket(
+        string $orderNumber,
         Basket $basket,
         Customer $customer,
-        array $additional = []
+        array $additional = [],
+        string|null $orderId = null,
     ): Order
     {
         $billingAddress = ($additional['billing_address'] ?? null) instanceof Address ?
@@ -37,11 +31,11 @@ class OrderFactory
         unset($additional['billing_address'], $additional['shipping_address']);
 
         return new Order(
-            id: Uuid::uuid4(),
+            id: $orderId ?? Uuid::uuid4(),
             customer: $customer,
             status: OrderStatus::DRAFT,
             currency: $basket->currency,
-            orderNumber: $this->orderNumberGenerator->reserve(),
+            orderNumber: $orderNumber,
             lineItems: $basket->lineItems,
             taxItems: $basket->taxItems,
             discountItems: $basket->discountItems,

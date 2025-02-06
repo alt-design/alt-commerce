@@ -15,12 +15,12 @@ class BasketFactory
     {
     }
 
-    public function create(): Basket
+    public function create(string|null $currency = null, string|null $countryCode = null): Basket
     {
         return new Basket(
             id: Uuid::uuid4()->toString(),
-            currency: $this->getCurrency(),
-            countryCode: $this->getCountry(),
+            currency: $currency ?? $this->getCurrency(),
+            countryCode: $countryCode ?? $this->getCountry(),
         );
     }
 

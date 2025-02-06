@@ -53,7 +53,7 @@ class BraintreeGateway implements PaymentGateway
                 billingAddress: $order->billingAddress,
                 braintreeCustomerId: $braintreeCustomerId,
                 braintreePaymentMethodToken: $braintreePaymentMethodToken,
-                amount: $order->total / 100,
+                amount: intval($order->total / 100),
                 descriptor: $this->getStatementDescriptor($order->orderNumber)
             );
 

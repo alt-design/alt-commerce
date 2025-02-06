@@ -28,14 +28,9 @@ class AddToBasketAction
     }
 
     /**
-     * @param string $productId
-     * @param int $quantity
      * @param array<string, string> $options
-     * @return void
-     * @throws ProductNotFoundException
-     * @throws CurrencyNotSupportedException|BillingPlanAlreadyInBasketException
      */
-    public function handle(string $productId, int $quantity = 1, array $options = []): void
+    public function handle(string $productId, int $quantity = 1, int $price = null, array $options = []): void
     {
         $basket = $this->basketRepository->get();
 
@@ -76,6 +71,8 @@ class AddToBasketAction
             );
 
         } else {
+            $subtotal = $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
+
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),
@@ -85,7 +82,7 @@ class AddToBasketAction
                 options: $options,
                 productData: $product->data(),
                 quantity: $quantity,
-                subTotal: $product->price()->getAmount($basket->currency, ['quantity' => $quantity])
+                subTotal: $subtotal,
             );
         }
 
