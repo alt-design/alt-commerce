@@ -71,7 +71,7 @@ class AddToBasketAction
             );
 
         } else {
-            $subtotal = $price !== null ? $price * $quantity : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
+            $subtotal = $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
 
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
