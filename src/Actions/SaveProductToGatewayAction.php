@@ -7,7 +7,7 @@ use AltDesign\AltCommerce\Commerce\Payment\GatewayBroker;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 
-class SaveProduct
+class SaveProductToGatewayAction
 {
     public function __construct(
         protected GatewayBroker $gatewayBroker,

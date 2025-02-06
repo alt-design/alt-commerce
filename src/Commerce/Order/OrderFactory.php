@@ -20,6 +20,7 @@ class OrderFactory
         Customer $customer,
         array $additional = [],
         string|null $orderId = null,
+        \DateTimeImmutable|null $orderDate = null,
     ): Order
     {
         $billingAddress = ($additional['billing_address'] ?? null) instanceof Address ?
@@ -49,6 +50,7 @@ class OrderFactory
             feeTotal: $basket->feeTotal,
             total: $basket->total,
             outstanding: $basket->total,
+            orderDate: $orderDate ?? new \DateTimeImmutable(),
             createdAt: new \DateTimeImmutable(),
             basketId: $basket->id,
             billingAddress: $billingAddress,

@@ -23,7 +23,7 @@ class CreateOrderAction
     /**
      * @param array<string, mixed> $additional
      */
-    public function handle(Customer $customer, array $additional = []): Order
+    public function handle(Customer $customer, array $additional = [], \DateTimeImmutable|null $orderDate = null): Order
     {
         $basket = $this->basketRepository->get();
 
@@ -38,6 +38,7 @@ class CreateOrderAction
             customer: $customer,
             additional: $additional,
             orderId: $orderId,
+            orderDate: $orderDate,
         );
 
         $this->orderRepository->save($order);

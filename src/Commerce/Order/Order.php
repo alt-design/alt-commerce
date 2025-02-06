@@ -48,6 +48,7 @@ class Order
         public int $feeTotal,
         public int $total,
         public int $outstanding,
+        public DateTimeImmutable $orderDate,
         public DateTimeImmutable $createdAt,
         public string|null $basketId = null,
         public Address|null $billingAddress = null,

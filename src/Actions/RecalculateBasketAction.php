@@ -52,7 +52,13 @@ class RecalculateBasketAction
 
     protected function calculateDiscountItems(Basket $basket): void
     {
-        $basket->discountItems = [];
+        // remove coupon discounts items as they need to be recalculated
+        foreach ($basket->discountItems as $key => $item) {
+            if ($item instanceof CouponDiscountItem) {
+                unset($basket->discountItems[$key]);
+            }
+        }
+
         foreach ($basket->coupons as $couponItem) {
             $discountAmount = $couponItem->coupon->discountType() === DiscountType::FIXED ?
                 $couponItem->coupon->discountAmount() :
