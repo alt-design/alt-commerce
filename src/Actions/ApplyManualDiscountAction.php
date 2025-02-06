@@ -14,7 +14,7 @@ class ApplyManualDiscountAction
 
     }
 
-    public function handle(int $amount, string|null $description = 'Manual discount'): void
+    public function handle(int $amount, string $description = 'Manual discount'): void
     {
 
         $discountItem = new ManualDiscountItem(

@@ -30,6 +30,7 @@ trait CommerceHelper
         $this->basket->deliveryItems = [];
         $this->basket->feeItems = [];
         $this->basket->subTotal = 0;
+        $this->basket->discountItems = [];
 
         $this->basketRepository = Mockery::mock(BasketRepository::class);
         $this->basketRepository->allows()->get()->andReturn($this->basket);
