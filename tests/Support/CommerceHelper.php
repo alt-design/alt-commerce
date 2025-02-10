@@ -58,11 +58,11 @@ trait CommerceHelper
             id: Uuid::uuid4(),
             productId: $product->id(),
             productName: $product->name(),
+            amount: $product->price()->getAmount($this->basket->currency, ['quantity' => $quantity]),
+            quantity: $quantity,
             taxable: $product->taxable(),
             taxRules: $product->taxRules(),
             productData: $product->data(),
-            quantity: $quantity,
-            subTotal: $product->price()->getAmount($this->basket->currency, ['quantity' => $quantity]),
         );
         $this->basket->lineItems[] = $lineItem;
         return $lineItem;

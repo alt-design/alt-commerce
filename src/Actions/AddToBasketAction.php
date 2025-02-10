@@ -71,18 +71,17 @@ class AddToBasketAction
             );
 
         } else {
-            $subtotal = $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
 
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),
                 productName: $product->name(),
+                amount: $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]),
+                quantity: $quantity,
                 taxable: $product->taxable(),
                 taxRules: $product->taxRules(),
                 options: $options,
                 productData: $product->data(),
-                quantity: $quantity,
-                subTotal: $subtotal,
             );
         }
 

@@ -58,7 +58,7 @@ class BraintreeGateway implements PaymentGateway
             );
 
             $transaction = $this->transactionFactory->createFromGateway(
-                driver:'braintree',
+                driver: 'braintree',
                 gateway: $request->gatewayName,
                 data: $result->transaction
             );

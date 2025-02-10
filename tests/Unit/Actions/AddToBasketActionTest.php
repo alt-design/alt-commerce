@@ -61,7 +61,7 @@ class AddToBasketActionTest extends TestCase
         $this->assertEquals('product-id', $this->basket->lineItems[0]->productId);
         $this->assertEquals('Test Product', $this->basket->lineItems[0]->productName);
         $this->assertEquals(2, $this->basket->lineItems[0]->quantity);
-        $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
+        $this->assertEquals(100, $this->basket->lineItems[0]->amount);
         $this->assertFalse( $this->basket->lineItems[0]->taxable);
     }
 

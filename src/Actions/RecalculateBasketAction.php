@@ -6,6 +6,7 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
+use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\DiscountItem;
@@ -31,7 +32,7 @@ class RecalculateBasketAction
     {
         $basket = $this->basketRepository->get();
 
-        //$this->refreshProducts($basket);
+        $this->refreshProducts($basket);
 
         $this->calculateLineItemTotals($basket);
         $this->calculateDiscountItems($basket);
@@ -44,10 +45,7 @@ class RecalculateBasketAction
 
     protected function refreshProducts(Basket $basket): void
     {
-        foreach ($basket->lineItems as $lineItem) {
-            $product = $this->productRepository->find($lineItem->productId);
-            // todo - ensure product is still available and in stock
-        }
+        // todo - ensure product is still available and in stock
     }
 
     protected function calculateDiscountItems(Basket $basket): void
@@ -75,38 +73,26 @@ class RecalculateBasketAction
 
     protected function calculateLineItemTotals(Basket $basket): void
     {
+
         $basket->subTotal = 0;
         foreach ($basket->lineItems as $lineItem) {
-            $lineItem->amount = $lineItem->subTotal * $lineItem->quantity;
-            $lineItem->discountAmount = 0; // todo reserved for line specific discount amount
-            $basket->subTotal += $lineItem->amount;
+            $lineItem->subTotal = $lineItem->amount * $lineItem->quantity;
+            $lineItem->discountTotal = 0; // todo reserved for line specific discount amount
+            if ($taxItem = $this->getTaxItemForLineItem($basket, $lineItem)) {
+                $lineItem->taxTotal = $taxItem->amount;
+                $lineItem->taxRate = $taxItem->rate;
+            }
+
+            $basket->subTotal += $lineItem->subTotal;
         }
     }
 
-    private function calculateTaxItems(Basket $basket): void
+    protected function calculateTaxItems(Basket $basket): void
     {
         $basket->taxItems = [];
         foreach ($basket->lineItems as $lineItem) {
-
-            $taxRules = [];
-            foreach ($lineItem->taxRules as $taxRule) {
-                if (!empty($taxRule->countryFilter) && !in_array($basket->countryCode, $taxRule->countryFilter)) {
-                    continue;
-                }
-                $taxRules[] = $taxRule;
-            }
-
-            if (!$lineItem->taxable || empty($taxRules)) {
-                continue;
-            }
-
-            foreach ($taxRules as $taxRule) {
-                $basket->taxItems[] = new TaxItem(
-                    name: $taxRule->name,
-                    amount: ($lineItem->amount + $lineItem->discountAmount) * $taxRule->rate / 100,
-                    rate: $taxRule->rate
-                );
-
+            if ($taxItem = $this->getTaxItemForLineItem($basket, $lineItem)) {
+                $basket->taxItems[] = $taxItem;
             }
         }
 
@@ -149,6 +135,34 @@ class RecalculateBasketAction
             $basket->feeTotal +
             $basket->discountTotal, 0
         );
+    }
+
+    protected function getTaxItemForLineItem(Basket $basket, LineItem $lineItem): ?TaxItem
+    {
+        $taxRules = [];
+        foreach ($lineItem->taxRules as $taxRule) {
+            if (!empty($taxRule->countryFilter) && !in_array($basket->countryCode, $taxRule->countryFilter)) {
+                continue;
+            }
+            $taxRules[] = $taxRule;
+        }
+
+        if (!$lineItem->taxable || empty($taxRules)) {
+            return null;
+        }
+
+        // For now only support first tax rule... Can't think of any scenario where we would need 2 tax rules.
+        // We rely on the repository to order tax rules by priority.
+        $taxRule = $taxRules[0];
+        $taxTotal = ($lineItem->subTotal + $lineItem->discountTotal) * $taxRule->rate / 100;
+
+        return new TaxItem(
+            name: $taxRule->name,
+            amount: $taxTotal,
+            rate: $taxRule->rate
+        );
+
+
     }
 
 

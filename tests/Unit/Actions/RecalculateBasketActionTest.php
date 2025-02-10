@@ -82,12 +82,12 @@ class RecalculateBasketActionTest extends TestCase
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(1450, $this->basket->total);
 
-        $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
-        $this->assertEquals(200, $this->basket->lineItems[0]->amount);
+        $this->assertEquals(100, $this->basket->lineItems[0]->amount);
+        $this->assertEquals(200, $this->basket->lineItems[0]->subTotal);
         $this->assertEquals(0, $this->basket->lineItems[0]->discountAmount);
 
-        $this->assertEquals(250, $this->basket->lineItems[1]->subTotal);
-        $this->assertEquals(1250, $this->basket->lineItems[1]->amount);
+        $this->assertEquals(250, $this->basket->lineItems[1]->amount);
+        $this->assertEquals(1250, $this->basket->lineItems[1]->subTotal);
         $this->assertEquals(0, $this->basket->lineItems[1]->discountAmount);
 
     }
@@ -126,13 +126,17 @@ class RecalculateBasketActionTest extends TestCase
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(1615, $this->basket->total);
 
-        $this->assertEquals(100, $this->basket->lineItems[0]->subTotal);
-        $this->assertEquals(200, $this->basket->lineItems[0]->amount);
-        $this->assertEquals(0, $this->basket->lineItems[0]->discountAmount);
+        $this->assertEquals(100, $this->basket->lineItems[0]->amount);
+        $this->assertEquals(200, $this->basket->lineItems[0]->subTotal);
+        $this->assertEquals(0, $this->basket->lineItems[0]->discountTotal);
+        $this->assertEquals(20, $this->basket->lineItems[0]->taxRate);
+        $this->assertEquals(40, $this->basket->lineItems[0]->taxTotal);
 
-        $this->assertEquals(250, $this->basket->lineItems[1]->subTotal);
-        $this->assertEquals(1250, $this->basket->lineItems[1]->amount);
+        $this->assertEquals(250, $this->basket->lineItems[1]->amount);
+        $this->assertEquals(1250, $this->basket->lineItems[1]->subTotal);
         $this->assertEquals(0, $this->basket->lineItems[1]->discountAmount);
+        $this->assertEquals(10, $this->basket->lineItems[1]->taxRate);
+        $this->assertEquals(125, $this->basket->lineItems[1]->taxTotal);
 
         $this->assertEquals(40, $this->basket->taxItems[0]->amount);
         $this->assertEquals(20, $this->basket->taxItems[0]->rate);
