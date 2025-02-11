@@ -177,12 +177,14 @@ class RecalculateBasketActionTest extends TestCase
         $this->assertEquals(60000, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
-        $this->assertEquals(-500, $this->basket->discountTotal);
+        $this->assertEquals(500, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(59500, $this->basket->total);
 
         $this->assertEquals(500, $this->basket->discountItems[0]->amount());
         $this->assertEquals('£5 off everything', $this->basket->discountItems[0]->name());
+
+        $this->assertEquals(500, $this->basket->lineItems[0]->discountTotal);
 
     }
 
@@ -218,12 +220,14 @@ class RecalculateBasketActionTest extends TestCase
         $this->assertEquals(60000, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
-        $this->assertEquals(-12000, $this->basket->discountTotal);
+        $this->assertEquals(12000, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(48000, $this->basket->total);
 
         $this->assertEquals(12000, $this->basket->discountItems[0]->amount());
         $this->assertEquals('20% off everything', $this->basket->discountItems[0]->name());
+
+        $this->assertEquals(12000, $this->basket->lineItems[0]->discountTotal);
 
     }
 
@@ -304,8 +308,117 @@ class RecalculateBasketActionTest extends TestCase
         $this->action->handle();
 
         $this->assertEquals(20, $this->basket->taxTotal);
+    }
 
+    public function test_fixed_coupon_codes_get_proportionately_applied_across_eligible_line_items()
+    {
+        $this->product1->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(5000, 'GBP'),
+                ])
+            )
+        );
 
+        $this->product2->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(6000, 'GBP'),
+                ])
+            )
+        );
+
+        $product3 = $this->createProduct(
+            id: 'product-3',
+            name: 'Test Product 3',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(7000, 'GBP'),
+                ])
+            )
+        );
+
+        $this->productRepository->allows()->find('product-3')->andReturn($product3);
+
+        $this->addLineItemToBasket($this->product1, 2);
+        $this->addLineItemToBasket($this->product2, 1);
+        $this->addLineItemToBasket($product3, 3);
+
+        $this->basket->coupons = [
+            new CouponItem(
+                coupon: new FixedDiscountCoupon(
+                    name: '£40 off',
+                    code: '4OFF',
+                    currency: 'GBP',
+                    discountAmount: 4000,
+                    ruleGroup: new RuleGroup(rules: [])
+                )
+            )
+        ];
+
+        $this->basketRepository->allows()->save($this->basket);
+
+        $this->action->handle();
+
+        $this->assertEquals(1081, $this->basket->lineItems[0]->discountTotal);
+        $this->assertEquals(648, $this->basket->lineItems[1]->discountTotal);
+        $this->assertEquals(2271, $this->basket->lineItems[2]->discountTotal);
+
+    }
+
+    public function test_percentage_coupon_codes_get_proportionately_applied_across_eligible_line_items()
+    {
+        $this->product1->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(5000, 'GBP'),
+                ])
+            )
+        );
+
+        $this->product2->allows()->price()->andReturns(
+            new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(6000, 'GBP'),
+                ])
+            )
+        );
+
+        $product3 = $this->createProduct(
+            id: 'product-3',
+            name: 'Test Product 3',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(7000, 'GBP'),
+                ])
+            )
+        );
+
+        $this->productRepository->allows()->find('product-3')->andReturn($product3);
+
+        $this->addLineItemToBasket($this->product1, 2); // 10000
+        $this->addLineItemToBasket($this->product2, 1); // 6000
+        $this->addLineItemToBasket($product3, 3); // 21000
+
+        $this->basket->coupons = [
+            new CouponItem(
+                coupon: new PercentageDiscountCoupon(
+                    name: '10% off',
+                    code: '10OFF',
+                    currency: 'GBP',
+                    discountAmount: 10,
+                    ruleGroup: new RuleGroup(rules: [])
+                )
+            )
+        ];
+
+        $this->basketRepository->allows()->save($this->basket);
+
+        $this->action->handle();
+
+        $this->assertEquals(1000, $this->basket->lineItems[0]->discountTotal);
+        $this->assertEquals(600, $this->basket->lineItems[1]->discountTotal);
+        $this->assertEquals(2100, $this->basket->lineItems[2]->discountTotal);
 
     }
 

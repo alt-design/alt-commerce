@@ -40,6 +40,9 @@ class RecalculateBasketAction
         $this->calculateTaxItems($basket);
         $this->calculateTotals($basket);
 
+        $this->calculateLineItemDiscounts($basket);
+        $this->calculateLineItemTax($basket);
+
         $this->basketRepository->save($basket);
     }
 
@@ -67,22 +70,59 @@ class RecalculateBasketAction
                 amount: $discountAmount,
                 coupon: $couponItem->coupon,
             );
+        }
+    }
 
+    protected function calculateLineItemTax(Basket $basket): void
+    {
+        foreach ($basket->lineItems as $lineItem) {
+            if ($taxItem = $this->getTaxItemForLineItem($basket, $lineItem)) {
+                $lineItem->taxTotal = $taxItem->amount;
+                $lineItem->taxRate = $taxItem->rate;
+                $lineItem->taxName = $taxItem->name;
+            }
+        }
+    }
+
+    protected function calculateLineItemDiscounts(Basket $basket): void
+    {
+
+        foreach ($basket->discountItems as $discountItem) {
+            if ( !($discountItem instanceof CouponDiscountItem)) {
+                continue;
+            }
+
+            $runningTotal = 0;
+            $maxDiscountAmount = 0;
+            $maxDiscountKey = null;
+            foreach ($basket->lineItems as $key => $lineItem) {
+                $weight = $lineItem->subTotal / $basket->subTotal;
+
+                $discountTotal = intval($discountItem->amount() * $weight);
+                $lineItem->discountTotal += $discountTotal;
+                $runningTotal += $discountTotal;
+
+                if ($discountTotal > $maxDiscountAmount) {
+                    $maxDiscountKey = $key;
+                    $maxDiscountAmount = $discountTotal;
+                }
+            }
+
+            // adjust for rounding errors
+            $diff = $runningTotal - $discountItem->amount();
+            if ($diff !== 0) {
+                $basket->lineItems[$maxDiscountKey]->discountTotal -= $diff;
+            }
         }
     }
 
     protected function calculateLineItemTotals(Basket $basket): void
     {
-
         $basket->subTotal = 0;
         foreach ($basket->lineItems as $lineItem) {
             $lineItem->subTotal = $lineItem->amount * $lineItem->quantity;
-            $lineItem->discountTotal = 0; // todo reserved for line specific discount amount
-            if ($taxItem = $this->getTaxItemForLineItem($basket, $lineItem)) {
-                $lineItem->taxTotal = $taxItem->amount;
-                $lineItem->taxRate = $taxItem->rate;
-            }
-
+            $lineItem->discountTotal = 0;
+            $lineItem->taxTotal = 0;
             $basket->subTotal += $lineItem->subTotal;
         }
     }
@@ -127,12 +167,12 @@ class RecalculateBasketAction
         $basket->taxTotal = array_reduce($basket->taxItems, fn($sum, TaxItem $item) => $sum + $item->amount, 0);
         $basket->deliveryTotal = array_reduce($basket->deliveryItems, fn($sum, DeliveryItem $item) => $sum + $item->amount, 0);
         $basket->feeTotal = array_reduce($basket->feeItems, fn($sum, FeeItem $item) => $sum + $item->amount, 0);
-        $basket->discountTotal = array_reduce($basket->discountItems, fn($sum, DiscountItem $item) => $sum + $item->amount()*-1, 0);
+        $basket->discountTotal = array_reduce($basket->discountItems, fn($sum, DiscountItem $item) => $sum + $item->amount(), 0);
         $basket->total = max(
             $basket->subTotal +
             $basket->taxTotal +
             $basket->deliveryTotal +
-            $basket->feeTotal +
+            $basket->feeTotal -
             $basket->discountTotal, 0
         );
     }

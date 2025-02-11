@@ -28,6 +28,7 @@ class LineItem
         public int    $subTotal = 0,
         public int    $taxTotal = 0,
         public float  $taxRate = 0,
+        public string|null $taxName = null
     )
     {
 
