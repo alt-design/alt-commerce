@@ -7,7 +7,7 @@ class TaxItem
     public function __construct(
         public string $name,
         public int $amount,
-        public int $rate
+        public float $rate
     )
     {
 
