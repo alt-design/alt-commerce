@@ -16,7 +16,7 @@ use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Traits\HasGatewayEntity;
 use DateTimeImmutable;
 
-class Order
+abstract class Order
 {
     /**
      * @param LineItem[] $lineItems

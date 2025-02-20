@@ -3,9 +3,9 @@
 namespace AltDesign\AltCommerce\Actions;
 
 use AltDesign\AltCommerce\Commerce\Order\Order;
-use AltDesign\AltCommerce\Commerce\Order\OrderFactory;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
+use AltDesign\AltCommerce\Contracts\OrderFactory;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
 
 class CreateOrderAction
