@@ -10,7 +10,7 @@
     },
     "require": {
         "php": "^8.2",
-        "nesbot/carbon": "^2.6",
+        "nesbot/carbon": "^3",
         "ramsey/uuid": "^4.7",
         "braintree/braintree_php": "^6.21"
     },
