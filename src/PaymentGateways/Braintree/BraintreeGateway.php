@@ -198,7 +198,8 @@ class BraintreeGateway implements PaymentGateway
         ];
 
         if ($descriptor) {
-            $params['descriptor']['name'] = $descriptor;
+            // disabled for now
+            //$params['descriptor']['name'] = $descriptor;
         }
 
         return $this->client->request(fn(Gateway $gateway) =>
