@@ -191,6 +191,7 @@ class BraintreeGateway implements PaymentGateway
             'customerId' => $braintreeCustomerId,
             'paymentMethodToken' => $braintreePaymentMethodToken,
             'amount' => $amount,
+            'merchantAccountId' => $this->merchantAccountId,
             'options' => [
                 'submitForSettlement' => true
             ],
