@@ -24,7 +24,7 @@ class TransactionFactory
             type: $this->matchType($transaction->type),
             status: $this->matchStatus($transaction->status),
             currency: $transaction->currencyIsoCode,
-            amount: intval($transaction->amount) * 100,
+            amount: intval(floatval($transaction->amount) * 100),
             createdAt: \DateTimeImmutable::createFromMutable($transaction->createdAt),
             rejectionReason: $transaction->gatewayRejectionReason,
             additional: $transaction->toArray(),
