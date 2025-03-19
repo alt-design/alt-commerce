@@ -182,7 +182,7 @@ class BraintreeGateway implements PaymentGateway
         Address $billingAddress,
         string $braintreeCustomerId,
         string $braintreePaymentMethodToken,
-        int $amount,
+        float $amount,
         string|null $descriptor = null
 
     ): mixed
