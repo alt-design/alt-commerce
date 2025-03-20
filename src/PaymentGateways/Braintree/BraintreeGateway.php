@@ -167,13 +167,13 @@ class BraintreeGateway implements PaymentGateway
     protected function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
     {
         $result = $this->client->request(fn(Gateway $gateway) =>
-        $gateway->paymentMethod()->create([
-            'customerId' => $gatewayCustomerId,
-            'paymentMethodNonce' => $paymentNonce,
-            'options' => [
-                'verifyCard' => true
-            ]
-        ])
+            $gateway->paymentMethod()->create([
+                'customerId' => $gatewayCustomerId,
+                'paymentMethodNonce' => $paymentNonce,
+                'options' => [
+                    'verifyCard' => true
+                ]
+            ])
         );
         return $result->paymentMethod->token;
     }
