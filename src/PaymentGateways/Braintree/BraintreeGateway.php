@@ -45,7 +45,7 @@ class BraintreeGateway implements PaymentGateway
         }
 
         $braintreeCustomerId = $this->saveCustomer($order->customer);
-        $braintreePaymentMethodToken = $this->createPaymentMethod($braintreeCustomerId, $request->gatewayPaymentNonce);
+        //$braintreePaymentMethodToken = $this->createPaymentMethod($braintreeCustomerId, $request->gatewayPaymentNonce);
 
         $order->customer->setGatewayId($request->gatewayName, $braintreeCustomerId);
 
@@ -53,7 +53,7 @@ class BraintreeGateway implements PaymentGateway
             $result = $this->createCharge(
                 billingAddress: $order->billingAddress,
                 braintreeCustomerId: $braintreeCustomerId,
-                braintreePaymentMethodToken: $braintreePaymentMethodToken,
+                braintreePaymentMethodToken: $request->gatewayPaymentNonce,
                 amount: $order->total / 100,
                 descriptor: $this->getStatementDescriptor($order->orderNumber)
             );
@@ -71,6 +71,7 @@ class BraintreeGateway implements PaymentGateway
 
         foreach ($order->billingItems as $item) {
 
+            /*
             $result = $this->createSubscription(
                 braintreePaymentMethodToken: $braintreePaymentMethodToken,
                 braintreePlanId: $item->getGatewayId($request->gatewayName, ['currency' => $order->currency]),
@@ -90,6 +91,7 @@ class BraintreeGateway implements PaymentGateway
                 gateway: $request->gatewayName,
                 data: $result->subscription
             );
+            */
         }
 
         return $order;
@@ -200,7 +202,8 @@ class BraintreeGateway implements PaymentGateway
     {
         $params = [
             'customerId' => $braintreeCustomerId,
-            'paymentMethodToken' => $braintreePaymentMethodToken,
+           // 'paymentMethodToken' => $braintreePaymentMethodToken,
+            'paymentMethodNonce' => $braintreePaymentMethodToken,
             'amount' => $amount,
             'merchantAccountId' => $this->merchantAccountId,
             'options' => [
@@ -215,7 +218,7 @@ class BraintreeGateway implements PaymentGateway
         }
 
         return $this->client->request(fn(Gateway $gateway) =>
-        $gateway->transaction()->sale($params)
+            $gateway->transaction()->sale($params)
         );
     }
 
