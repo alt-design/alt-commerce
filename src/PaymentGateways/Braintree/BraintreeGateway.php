@@ -6,6 +6,7 @@ use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Order\Order;
+use AltDesign\AltCommerce\Commerce\Payment\GenerateAuthTokenRequest;
 use AltDesign\AltCommerce\Commerce\Payment\ProcessOrderRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
@@ -94,9 +95,18 @@ class BraintreeGateway implements PaymentGateway
         return $order;
     }
 
-    public function createPaymentNonceAuthToken(): string
+    public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): string
     {
-        return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate());
+        $params = [
+            'merchantAccountId' => $this->merchantAccountId,
+        ];
+        if (!empty($request->customer)) {
+            if ($gatewayCustomerId = $request->customer->findGatewayId($this->name)) {
+                $params['customerId'] = $gatewayCustomerId;
+            }
+        }
+        // @phpstan-ignore-next-line
+        return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate($params));
     }
 
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
