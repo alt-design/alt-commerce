@@ -20,9 +20,11 @@ class BraintreeApiClient
 
         if ($response instanceof Error) {
 
-            $status = $response->creditCardVerification?->status ;
-            if ($status === 'processor_declined') {
-                throw new PaymentFailedException();
+            if (!empty($response->creditCardVerification)) {
+                $status = $response->creditCardVerification->status;
+                if ($status === 'processor_declined') {
+                    throw new PaymentFailedException();
+                }
             }
 
             // todo better exception that can take multiple errors.
