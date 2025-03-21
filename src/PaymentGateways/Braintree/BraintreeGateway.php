@@ -168,6 +168,8 @@ class BraintreeGateway implements PaymentGateway
                     'email' => $customer->customerEmail()
                 ])
             )->customer->id;
+
+            $customer->setGatewayId($this->name, $id);
         }
 
         return $id;
