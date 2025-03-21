@@ -101,10 +101,9 @@ class BraintreeGateway implements PaymentGateway
             'merchantAccountId' => $this->merchantAccountId,
         ];
         if (!empty($request->customer)) {
-            if ($gatewayCustomerId = $request->customer->findGatewayId($this->name)) {
-                $params['customerId'] = $gatewayCustomerId;
-            }
+            $params['customerId'] = $this->saveCustomer($request->customer);
         }
+
         // @phpstan-ignore-next-line
         return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate($params));
     }
