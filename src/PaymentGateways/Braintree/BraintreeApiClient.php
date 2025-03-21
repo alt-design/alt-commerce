@@ -20,7 +20,7 @@ class BraintreeApiClient
 
         if ($response instanceof Error) {
 
-            $status = $response->creditCardVerification->status ;
+            $status = $response->creditCardVerification?->status ;
             if ($status === 'processor_declined') {
                 throw new PaymentFailedException();
             }
