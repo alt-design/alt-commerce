@@ -38,7 +38,11 @@ class ApplyCouponAction
             );
         }
 
-        $this->validateCouponPipeline->handle($basket, $coupon, $customer);
+        $this->validateCouponPipeline->handle(
+            basket: $basket,
+            coupon: $coupon,
+            customer: $customer
+        );
 
         $basket->coupons = [
             new CouponItem(

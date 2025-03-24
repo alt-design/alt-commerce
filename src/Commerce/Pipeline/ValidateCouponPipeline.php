@@ -19,8 +19,8 @@ class ValidateCouponPipeline extends Pipeline
         self::register(...func_get_args());
     }
 
-    public function handle(Basket $basket, Coupon $coupon, Customer|null $customer = null): void
+    public function handle(Coupon $coupon, Basket $basket, Customer|null $customer = null): void
     {
-        $this->run($basket, $coupon, $customer);
+        $this->run($coupon, $basket, $customer);
     }
 }
