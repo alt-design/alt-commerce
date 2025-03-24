@@ -10,7 +10,9 @@ use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCo
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ClearDiscounts;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ValidateCoupons;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
+use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCouponPipeline;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
 use AltDesign\AltCommerce\Contracts\Coupon;
@@ -59,10 +61,16 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->productRepository->allows()->find('product-1')->andReturns($this->product1);
         $this->productRepository->allows()->find('product-2')->andReturns($this->product2);
 
+        $validateCouponPipeline = Mockery::mock(ValidateCouponPipeline::class);
+        $validateCouponPipeline->allows('handle');
+
         $this->pipeline = new RecalculateBasketPipeline(
             clearDiscounts: new ClearDiscounts(),
-            calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
+            validateCoupons: new ValidateCoupons(
+                validateCouponPipeline: $validateCouponPipeline,
+            ),
             calculateLineItemSubtotals: new CalculateLineItemSubtotals(),
+            calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
             calculateLineItemTax: new CalculateLineItemTax(),
             calculateTaxItems: new CalculateTaxItems(),
             calculateTotals: new CalculateTotals(),

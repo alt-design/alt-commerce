@@ -9,6 +9,7 @@ use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCo
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ClearDiscounts;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ValidateCoupons;
 
 class RecalculateBasketPipeline
 {
@@ -19,6 +20,7 @@ class RecalculateBasketPipeline
 
     public function __construct(
         protected ClearDiscounts                   $clearDiscounts,
+        protected ValidateCoupons                  $validateCoupons,
         protected CalculateLineItemSubtotals       $calculateLineItemSubtotals,
         protected CalculateProductCouponsDiscounts $calculateProductCouponDiscounts,
         protected CalculateLineItemTax             $calculateLineItemTax,

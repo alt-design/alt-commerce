@@ -7,6 +7,7 @@ use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCoupon\ValidateCouponDates;
 use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCoupon\ValidateEligibleProducts;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\Customer;
+use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 
 
 class ValidateCouponPipeline
@@ -24,6 +25,9 @@ class ValidateCouponPipeline
         self::register(...func_get_args());
     }
 
+    /**
+     * @throws CouponNotValidException
+     */
     public function handle(Coupon $coupon, Basket $basket, Customer|null $customer = null): void
     {
         foreach (self::$stages as $stage) {
