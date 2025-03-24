@@ -66,9 +66,13 @@ class CalculateProductCouponsDiscounts
 
     }
 
+    /**
+     * @return array<LineItem>
+     */
     protected function eligibleLineItems(Basket $basket, ProductCoupon $coupon): array
     {
-        return array_filter($basket->lineItems, fn(LineItem $item) => $coupon->isProductEligible($item->productId));
+        // @phpstan-ignore-next-line
+        return array_filter($basket->lineItems, fn(LineItem|null $item) => $coupon->isProductEligible($item->productId));
     }
 
 }
