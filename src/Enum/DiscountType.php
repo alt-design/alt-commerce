@@ -4,6 +4,6 @@ namespace AltDesign\AltCommerce\Enum;
 
 enum DiscountType: string
 {
-    case FIXED = 'fixed';
-    case PERCENTAGE = 'percentage';
+    case PRODUCT_COUPON = 'product_coupon';
+    case MANUAL = 'manual';
 }

@@ -4,6 +4,7 @@ namespace AltDesign\AltCommerce\Commerce\Order;
 
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\DeliveryItem;
+use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\FeeItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
@@ -11,9 +12,7 @@ use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\Customer;
-use AltDesign\AltCommerce\Contracts\DiscountItem;
 use AltDesign\AltCommerce\Enum\OrderStatus;
-use AltDesign\AltCommerce\Traits\HasGatewayEntity;
 use DateTimeImmutable;
 
 abstract class Order

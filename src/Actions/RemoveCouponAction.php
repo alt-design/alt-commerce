@@ -3,10 +3,10 @@
 namespace AltDesign\AltCommerce\Actions;
 
 
-use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
-use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
+use AltDesign\AltCommerce\Enum\CouponNotValidReason;
+use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 
 
 class RemoveCouponAction
@@ -34,7 +34,7 @@ class RemoveCouponAction
         }
 
         if (!$found) {
-            throw new CouponNotFoundException($code);
+            throw new CouponNotValidException(reason: CouponNotValidReason::NOT_FOUND);
         }
 
         $this->basketRepository->save($basket);

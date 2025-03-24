@@ -3,9 +3,9 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\RecalculateBasketPipeline;
-use Mockery;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
+use Mockery;
 
 class RecalculateBasketActionTest extends TestCase
 {

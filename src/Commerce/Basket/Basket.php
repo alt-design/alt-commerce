@@ -2,8 +2,6 @@
 
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
-use AltDesign\AltCommerce\Contracts\DiscountItem;
-
 class Basket
 {
 

@@ -4,14 +4,15 @@ namespace AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 
-class CalculateLineItemSubtotals
+class ClearDiscounts
 {
     public function handle(Basket $basket): void
     {
-        $basket->subTotal = 0;
+        $basket->discountTotal = 0;
+        $basket->discountItems = [];
         foreach ($basket->lineItems as $lineItem) {
-            $lineItem->subTotal = $lineItem->amount * $lineItem->quantity;
-            $basket->subTotal += $lineItem->subTotal;
+            $lineItem->discountTotal = 0;
+            $lineItem->discounts = [];
         }
     }
 }

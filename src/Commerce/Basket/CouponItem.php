@@ -6,14 +6,13 @@ use AltDesign\AltCommerce\Contracts\Coupon;
 
 class CouponItem
 {
-    public readonly string $id;
 
     public function __construct(
+        public string $id,
         public Coupon $coupon,
-        public int $amount = 0,
     )
     {
-        $this->id = 'coupon:'.$this->coupon->code();
+
     }
 
 

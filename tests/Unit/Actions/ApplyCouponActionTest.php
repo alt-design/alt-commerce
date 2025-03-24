@@ -4,13 +4,11 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\ApplyCouponAction;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
+use AltDesign\AltCommerce\Commerce\Discount\CouponValidator;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
-use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
+use AltDesign\AltCommerce\Enum\CouponNotValidReason;
 use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
-use AltDesign\AltCommerce\RuleEngine\EvaluationResult;
-use AltDesign\AltCommerce\RuleEngine\RuleGroup;
-use AltDesign\AltCommerce\RuleEngine\RuleManager;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
@@ -22,29 +20,26 @@ class ApplyCouponActionTest extends TestCase
     protected $coupon;
     protected $couponRepository;
     protected $recalculateBasketAction;
-    protected $ruleManager;
+    protected $couponValidator;
     protected $action;
 
     protected function setUp(): void
     {
         $this->createBasket();
-        $this->basketRepository->shouldReceive('save')->with($this->basket);
 
         $this->coupon = Mockery::mock(Coupon::class);
-        $this->coupon->allows()->ruleGroup()->andReturn(new RuleGroup(rules: []));
 
         $this->couponRepository = Mockery::mock(CouponRepository::class);
 
-
         $this->recalculateBasketAction= Mockery::mock(RecalculateBasketAction::class);
 
-        $this->ruleManager = Mockery::mock(RuleManager::class);
+        $this->couponValidator = Mockery::mock(CouponValidator::class);
 
         $this->action = new ApplyCouponAction(
             basketRepository: $this->basketRepository,
             couponRepository: $this->couponRepository,
             recalculateBasketAction: $this->recalculateBasketAction,
-            ruleManager: $this->ruleManager
+            couponValidator: $this->couponValidator,
         );
     }
 
@@ -53,7 +48,7 @@ class ApplyCouponActionTest extends TestCase
     {
         $this->couponRepository->shouldReceive('find')->with('GBP', 'SAVE20')->once()->andReturn($this->coupon);
         $this->recalculateBasketAction->shouldReceive('handle')->once();
-        $this->ruleManager->shouldReceive('evaluate')->once()->andReturn(new EvaluationResult(true));
+        $this->couponValidator->shouldReceive('validate')->once()->andReturn(true);
 
         $this->coupon->allows()->code()->andReturn('SAVE20');
         $this->action->handle('SAVE20');
@@ -65,19 +60,22 @@ class ApplyCouponActionTest extends TestCase
 
     public function test_invalid_coupon_throws_exception(): void
     {
-        $this->expectException(CouponNotFoundException::class);
+        $this->expectException(CouponNotValidException::class);
+        $this->expectExceptionMessage(CouponNotValidReason::NOT_FOUND->value);
 
         $this->couponRepository->shouldReceive('find')->with('GBP', 'NOLONGER')->once()->andReturn(null);
 
         $this->action->handle('NOLONGER');
     }
 
-    public function test_coupon_with_invalid_rules_throws_exception(): void
+    public function test_coupon_throw_exception_when_failed_validation(): void
     {
         $this->expectException(CouponNotValidException::class);
 
         $this->couponRepository->shouldReceive('find')->with('GBP', 'SAVE20')->once()->andReturn($this->coupon);
-        $this->ruleManager->shouldReceive('evaluate')->once()->andReturn(new EvaluationResult(false));
+        $this->couponValidator->shouldReceive('validate')->once()->andThrow(new CouponNotValidException(
+            reason: CouponNotValidReason::NOT_ELIGIBLE,
+        ));
 
         $this->action->handle('SAVE20');
     }

@@ -2,14 +2,18 @@
 
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
-class LineDiscount
+use AltDesign\AltCommerce\Enum\DiscountType;
+
+class DiscountItem
 {
     public function __construct(
         public string $id,
-        public string $discountItemId,
         public string $name,
         public int $amount,
-    ) {
+        public DiscountType $type,
+        public string|null $couponCode = null,
+    )
+    {
 
     }
 }

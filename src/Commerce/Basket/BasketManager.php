@@ -4,7 +4,6 @@ namespace AltDesign\AltCommerce\Commerce\Basket;
 
 
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\DiscountItem;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 class BasketManager

@@ -4,10 +4,12 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveCouponAction;
-use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
+use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Contracts\Coupon;
-use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
+use AltDesign\AltCommerce\Enum\CouponNotValidReason;
+use AltDesign\AltCommerce\Enum\DiscountType;
+use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use Mockery;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
@@ -33,10 +35,11 @@ class RemoveCouponActionTest extends TestCase
 
     public function test_removing_coupon_from_basket()
     {
-        $coupon = Mockery::mock(Coupon::class);
-        $coupon->allows()->code()->andReturn('coupon-code');
-        $coupon->allows()->name()->andReturn('Coupon Name');
-        $coupon->allows()->discountAmount()->andReturn(100);
+        $coupon = $this->createProductCoupon(
+            code: 'coupon-code',
+            name: 'Coupon Name',
+            discountAmount: 100,
+        );
 
         $couponItem = Mockery::mock(CouponItem::class);
         $couponItem->coupon = $coupon;
@@ -46,10 +49,12 @@ class RemoveCouponActionTest extends TestCase
         ];
 
         $this->basket->discountItems = [
-            new CouponDiscountItem(
+            new DiscountItem(
+                id: 'discount-item-id',
                 name: $coupon->name(),
                 amount: $coupon->discountAmount(),
-                coupon: $coupon
+                type: DiscountType::PRODUCT_COUPON,
+                couponCode: $coupon->code(),
             )
         ];
 
@@ -65,7 +70,8 @@ class RemoveCouponActionTest extends TestCase
 
     public function test_removing_invalid_coupon_throws_exception()
     {
-        $this->expectException(CouponNotFoundException::class);
+        $this->expectException(CouponNotValidException::class);
+        $this->expectExceptionMessage(CouponNotValidReason::NOT_FOUND->value);
 
         $this->action->handle('invalid-coupon');
     }

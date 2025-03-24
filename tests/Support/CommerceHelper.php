@@ -6,17 +6,20 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
+use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
+use AltDesign\AltCommerce\Contracts\ProductCoupon;
 use AltDesign\AltCommerce\Contracts\Settings;
+use AltDesign\AltCommerce\Enum\DiscountType;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
 trait CommerceHelper
 {
-    protected $basket;
-    protected $basketRepository;
-    protected $settings;
+    protected Basket $basket;
+    protected BasketRepository $basketRepository;
+    protected Settings $settings;
 
     protected function createBasket(string $currency = 'GBP', string $id = 'test-basket', string $countryCode = 'GB')
     {
@@ -50,6 +53,22 @@ trait CommerceHelper
         }
 
         return $product;
+    }
+
+    protected function createProductCoupon(string $code, string $name, int $discountAmount, bool $isPercentage = false, string $currency = 'GBP', array $eligibleProducts = [])
+    {
+        $coupon = Mockery::mock(ProductCoupon::class);
+        $coupon->allows()->code()->andReturn($code);
+        $coupon->allows()->name()->andReturn($name);
+        $coupon->allows()->discountAmount()->andReturn($discountAmount);
+        $coupon->allows()->isPercentage()->andReturn($isPercentage);
+        $coupon->allows()->currency()->andReturn($currency);
+        $coupon->allows('isProductEligible')
+            ->andReturnUsing(
+                fn($productId) => in_array($productId, $eligibleProducts)
+            );
+
+        return $coupon;
     }
 
     protected function addLineItemToBasket($product, $quantity): LineItem

@@ -3,14 +3,14 @@
 namespace AltDesign\AltCommerce\Actions;
 
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
+use AltDesign\AltCommerce\Commerce\Discount\CouponValidator;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
-use AltDesign\AltCommerce\Exceptions\CouponNotFoundException;
+use AltDesign\AltCommerce\Enum\CouponNotValidReason;
 use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
-use AltDesign\AltCommerce\RuleEngine\RuleManager;
+use Ramsey\Uuid\Uuid;
 
 class ApplyCouponAction
 {
@@ -19,7 +19,7 @@ class ApplyCouponAction
         protected BasketRepository $basketRepository,
         protected CouponRepository $couponRepository,
         protected RecalculateBasketAction $recalculateBasketAction,
-        protected RuleManager $ruleManager,
+        protected CouponValidator $couponValidator,
     )
     {
 
@@ -27,43 +27,27 @@ class ApplyCouponAction
 
     public function handle(string $coupon): Coupon
     {
-
         $basket = $this->basketRepository->get();
 
         $coupon = $this->couponRepository->find($basket->currency, $coupon);
 
         if (empty($coupon)) {
-            throw new CouponNotFoundException();
+            throw new CouponNotValidException(
+                reason: CouponNotValidReason::NOT_FOUND
+            );
         }
 
-        $this->validate($basket, $coupon);
+        $this->couponValidator->validate($basket, $coupon);
 
-        // todo - support for multiple coupons?
         $basket->coupons = [
             new CouponItem(
+                id: Uuid::uuid4()->toString(),
                 coupon: $coupon
             )
         ];
-
-        $this->basketRepository->save($basket);
 
         $this->recalculateBasketAction->handle();
 
         return $coupon;
     }
-
-
-    protected function validate(Basket $basket, Coupon $coupon): void
-    {
-        $result = $this->ruleManager->evaluate($coupon->ruleGroup(), context: [
-            'basket' => $basket,
-            'coupon' => $coupon,
-        ]);
-
-        if (!$result->result) {
-            throw new CouponNotValidException();
-        }
-    }
-
-
 }

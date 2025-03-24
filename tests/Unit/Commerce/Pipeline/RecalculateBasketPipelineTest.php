@@ -1,24 +1,21 @@
 <?php
 
-namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Pipeline\RecalculateBasket;
+namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Pipeline;
 
-use AltDesign\AltCommerce\Commerce\Basket\CouponDiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
-use AltDesign\AltCommerce\Commerce\Coupon\FixedDiscountCoupon;
-use AltDesign\AltCommerce\Commerce\Coupon\PercentageDiscountCoupon;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateDiscountItems;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemDiscounts;
+use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemSubtotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemTax;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCouponsDiscounts;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\RecalculateBasketPipeline;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ClearDiscounts;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
-use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
@@ -64,9 +61,9 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->pipeline = new RecalculateBasketPipeline(
             basketRepository: $this->basketRepository,
+            clearDiscounts: new ClearDiscounts(),
+            calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
             calculateLineItemSubtotals: new CalculateLineItemSubtotals(),
-            calculateDiscountItems: new CalculateDiscountItems(),
-            calculateLineItemDiscounts: new CalculateLineItemDiscounts(),
             calculateLineItemTax: new CalculateLineItemTax(),
             calculateTaxItems: new CalculateTaxItems(),
             calculateTotals: new CalculateTotals(),
@@ -93,11 +90,11 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->assertEquals(100, $this->basket->lineItems[0]->amount);
         $this->assertEquals(200, $this->basket->lineItems[0]->subTotal);
-        $this->assertEquals(0, $this->basket->lineItems[0]->discountAmount);
+        $this->assertEquals(0, $this->basket->lineItems[0]->discountTotal);
 
         $this->assertEquals(250, $this->basket->lineItems[1]->amount);
         $this->assertEquals(1250, $this->basket->lineItems[1]->subTotal);
-        $this->assertEquals(0, $this->basket->lineItems[1]->discountAmount);
+        $this->assertEquals(0, $this->basket->lineItems[1]->discountTotal);
 
     }
 
@@ -143,7 +140,7 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->assertEquals(250, $this->basket->lineItems[1]->amount);
         $this->assertEquals(1250, $this->basket->lineItems[1]->subTotal);
-        $this->assertEquals(0, $this->basket->lineItems[1]->discountAmount);
+        $this->assertEquals(0, $this->basket->lineItems[1]->discountTotal);
         $this->assertEquals(10, $this->basket->lineItems[1]->taxRate);
         $this->assertEquals(125, $this->basket->lineItems[1]->taxTotal);
 
@@ -169,31 +166,33 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->basket->coupons = [
             new CouponItem(
-                coupon: new FixedDiscountCoupon(
-                    name: '£5 off everything',
+                id: 'coupon-id-1',
+                coupon: $this->createProductCoupon(
                     code: 'giveme5',
-                    currency: 'GBP',
+                    name: '£5 off everything',
                     discountAmount: 500,
-                    ruleGroup: new RuleGroup(rules: [])
+                    eligibleProducts: ['product-1'],
                 )
             )
         ];
+
 
         $this->basketRepository->allows()->save($this->basket);
 
         $this->pipeline->handle();
 
-        $this->assertEquals(60000, $this->basket->subTotal);
+        $this->assertEquals(59500, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
         $this->assertEquals(500, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(59500, $this->basket->total);
 
-        $this->assertEquals(500, $this->basket->discountItems[0]->amount());
-        $this->assertEquals('£5 off everything', $this->basket->discountItems[0]->name());
+        $this->assertEquals(500, $this->basket->discountItems[0]->amount);
+        $this->assertEquals('£5 off everything', $this->basket->discountItems[0]->name);
 
         $this->assertEquals(500, $this->basket->lineItems[0]->discountTotal);
+        $this->assertEquals($this->basket->discountItems[0]->id, $this->basket->lineItems[0]->discounts[0]->discountItemId);
 
     }
 
@@ -212,12 +211,13 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->basket->coupons = [
             new CouponItem(
-                coupon: new PercentageDiscountCoupon(
-                    name: '20% off everything',
+                id: 'coupon-id-1',
+                coupon: $this->createProductCoupon(
                     code: '20OFF',
-                    currency: 'GBP',
+                    name: '20% off everything',
                     discountAmount: 20,
-                    ruleGroup: new RuleGroup(rules: [])
+                    isPercentage: true,
+                    eligibleProducts: ['product-1'],
                 )
             )
         ];
@@ -226,15 +226,16 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->pipeline->handle();
 
-        $this->assertEquals(60000, $this->basket->subTotal);
+
+        $this->assertEquals(48000, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
         $this->assertEquals(0, $this->basket->deliveryTotal);
         $this->assertEquals(12000, $this->basket->discountTotal);
         $this->assertEquals(0, $this->basket->feeTotal);
         $this->assertEquals(48000, $this->basket->total);
 
-        $this->assertEquals(12000, $this->basket->discountItems[0]->amount());
-        $this->assertEquals('20% off everything', $this->basket->discountItems[0]->name());
+        $this->assertEquals(12000, $this->basket->discountItems[0]->amount);
+        $this->assertEquals('20% off everything', $this->basket->discountItems[0]->name);
 
         $this->assertEquals(12000, $this->basket->lineItems[0]->discountTotal);
 
@@ -256,10 +257,12 @@ class RecalculateBasketPipelineTest extends TestCase
         $coupon->allows()->code()->andReturn('test-code');
 
         $this->basket->discountItems = [
-            new CouponDiscountItem(
+            new DiscountItem(
+                id: 'discount-item-id',
                 name: 'test',
                 amount: 200,
-                coupon: $coupon
+                type: DiscountType::PRODUCT_COUPON,
+                couponCode: 'test-code'
             )
         ];
 
@@ -281,21 +284,24 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->addLineItemToBasket($this->product1, 5);
         $this->basketRepository->allows()->save($this->basket);
 
-        $coupon = Mockery::mock(Coupon::class);
-        $coupon->allows()->code()->andReturn('20OFF');
-        $coupon->allows()->discountType()->andReturn(DiscountType::FIXED);
-        $coupon->allows()->discountAmount()->andReturn(20);
-        $coupon->allows()->name()->andReturn('20% off everything');
+        $coupon = $this->createProductCoupon(
+            code: '20OFF',
+            name: '20% off everything',
+            discountAmount: 20,
+            isPercentage: false,
+        );
 
         $this->basket->discountItems = [
-            new CouponDiscountItem(
+            new DiscountItem(
+                id: 'discount-item-id',
                 name: '20% off everything',
                 amount: 20,
-                coupon: $coupon
+                type: DiscountType::PRODUCT_COUPON,
+                couponCode: '20OFF',
             )
         ];
 
-        $this->basket->coupons = [new CouponItem(coupon: $coupon)];
+        $this->basket->coupons = [new CouponItem(id: 'coupon-id', coupon: $coupon)];
 
         $this->pipeline->handle();
 
@@ -318,115 +324,4 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->assertEquals(20, $this->basket->taxTotal);
     }
 
-    public function test_fixed_coupon_codes_get_proportionately_applied_across_eligible_line_items()
-    {
-        $this->product1->allows()->price()->andReturns(
-            new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(5000, 'GBP'),
-                ])
-            )
-        );
-
-        $this->product2->allows()->price()->andReturns(
-            new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(6000, 'GBP'),
-                ])
-            )
-        );
-
-        $product3 = $this->createProduct(
-            id: 'product-3',
-            name: 'Test Product 3',
-            priceSchema: new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(7000, 'GBP'),
-                ])
-            )
-        );
-
-        $this->productRepository->allows()->find('product-3')->andReturn($product3);
-
-        $this->addLineItemToBasket($this->product1, 2);
-        $this->addLineItemToBasket($this->product2, 1);
-        $this->addLineItemToBasket($product3, 3);
-
-        $this->basket->coupons = [
-            new CouponItem(
-                coupon: new FixedDiscountCoupon(
-                    name: '£40 off',
-                    code: '4OFF',
-                    currency: 'GBP',
-                    discountAmount: 4000,
-                    ruleGroup: new RuleGroup(rules: [])
-                )
-            )
-        ];
-
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
-
-        $this->assertEquals(1081, $this->basket->lineItems[0]->discountTotal);
-        $this->assertEquals(648, $this->basket->lineItems[1]->discountTotal);
-        $this->assertEquals(2271, $this->basket->lineItems[2]->discountTotal);
-
-    }
-
-    public function test_percentage_coupon_codes_get_proportionately_applied_across_eligible_line_items()
-    {
-        $this->product1->allows()->price()->andReturns(
-            new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(5000, 'GBP'),
-                ])
-            )
-        );
-
-        $this->product2->allows()->price()->andReturns(
-            new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(6000, 'GBP'),
-                ])
-            )
-        );
-
-        $product3 = $this->createProduct(
-            id: 'product-3',
-            name: 'Test Product 3',
-            priceSchema: new FixedPriceSchema(
-                prices: new PriceCollection([
-                    new Money(7000, 'GBP'),
-                ])
-            )
-        );
-
-        $this->productRepository->allows()->find('product-3')->andReturn($product3);
-
-        $this->addLineItemToBasket($this->product1, 2); // 10000
-        $this->addLineItemToBasket($this->product2, 1); // 6000
-        $this->addLineItemToBasket($product3, 3); // 21000
-
-        $this->basket->coupons = [
-            new CouponItem(
-                coupon: new PercentageDiscountCoupon(
-                    name: '10% off',
-                    code: '10OFF',
-                    currency: 'GBP',
-                    discountAmount: 10,
-                    ruleGroup: new RuleGroup(rules: [])
-                )
-            )
-        ];
-
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
-
-        $this->assertEquals(1000, $this->basket->lineItems[0]->discountTotal);
-        $this->assertEquals(600, $this->basket->lineItems[1]->discountTotal);
-        $this->assertEquals(2100, $this->basket->lineItems[2]->discountTotal);
-
-    }
 }

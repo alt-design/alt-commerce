@@ -2,8 +2,6 @@
 
 namespace AltDesign\AltCommerce\Contracts;
 
-use AltDesign\AltCommerce\Enum\DiscountType;
-use AltDesign\AltCommerce\RuleEngine\RuleGroup;
 
 interface Coupon
 {
@@ -11,12 +9,14 @@ interface Coupon
 
     public function code(): string;
 
-    public function discountAmount(): int;
-
     public function currency(): string;
 
-    public function discountType(): DiscountType;
+    public function startDate(): \DateTimeImmutable|null;
 
-    public function ruleGroup(): RuleGroup;
+    public function endDate(): \DateTimeImmutable|null;
+
+    public function discountAmount(): int;
+
+    public function isPercentage(): bool;
 
 }

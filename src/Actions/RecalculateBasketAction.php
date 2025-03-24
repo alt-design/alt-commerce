@@ -2,7 +2,7 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\RecalculateBasketPipeline;
+use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 
