@@ -6,20 +6,18 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductCoupon;
 use AltDesign\AltCommerce\Contracts\Settings;
-use AltDesign\AltCommerce\Enum\DiscountType;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
 trait CommerceHelper
 {
-    protected Basket $basket;
-    protected BasketRepository $basketRepository;
-    protected Settings $settings;
+    protected $basket;
+    protected $basketRepository;
+    protected $settings;
 
     protected function createBasket(string $currency = 'GBP', string $id = 'test-basket', string $countryCode = 'GB')
     {
