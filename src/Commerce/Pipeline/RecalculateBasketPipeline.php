@@ -10,8 +10,13 @@ use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ClearDiscounts;
 
-class RecalculateBasketPipeline extends Pipeline
+class RecalculateBasketPipeline
 {
+    /**
+     * @var array<mixed>
+     */
+    protected static array $stages = [];
+
     public function __construct(
         protected ClearDiscounts                   $clearDiscounts,
         protected CalculateLineItemSubtotals       $calculateLineItemSubtotals,
@@ -26,7 +31,14 @@ class RecalculateBasketPipeline extends Pipeline
 
     public function handle(Basket $basket): void
     {
-        $this->run($basket);
+        foreach (self::$stages as $stage) {
+            $stage->handle($basket);
+        }
+    }
+
+    public static function register(object ...$job): void
+    {
+        array_push(self::$stages, ...$job);
     }
 
 }

@@ -9,8 +9,13 @@ use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\Customer;
 
 
-class ValidateCouponPipeline extends Pipeline
+class ValidateCouponPipeline
 {
+    /**
+     * @var array<mixed>
+     */
+    protected static array $stages = [];
+
     public function __construct(
        ValidateCouponDates $validateCouponDates,
        ValidateEligibleProducts $validateEligibleProducts,
@@ -21,6 +26,13 @@ class ValidateCouponPipeline extends Pipeline
 
     public function handle(Coupon $coupon, Basket $basket, Customer|null $customer = null): void
     {
-        $this->run($coupon, $basket, $customer);
+        foreach (self::$stages as $stage) {
+            $stage->handle($coupon, $basket, $customer);
+        }
+    }
+
+    public static function register(object ...$job): void
+    {
+        array_push(self::$stages, ...$job);
     }
 }
