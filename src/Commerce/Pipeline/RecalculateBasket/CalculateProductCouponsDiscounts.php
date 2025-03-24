@@ -27,7 +27,6 @@ class CalculateProductCouponsDiscounts
 
     protected function processCoupon(ProductCoupon $coupon, Basket $basket): void
     {
-
         if ($basket->subTotal === 0) {
             return;
         }

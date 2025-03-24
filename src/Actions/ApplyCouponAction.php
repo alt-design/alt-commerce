@@ -4,10 +4,11 @@ namespace AltDesign\AltCommerce\Actions;
 
 
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
-use AltDesign\AltCommerce\Commerce\Discount\CouponValidator;
+use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCouponPipeline;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
+use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Enum\CouponNotValidReason;
 use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 use Ramsey\Uuid\Uuid;
@@ -19,13 +20,13 @@ class ApplyCouponAction
         protected BasketRepository $basketRepository,
         protected CouponRepository $couponRepository,
         protected RecalculateBasketAction $recalculateBasketAction,
-        protected CouponValidator $couponValidator,
+        protected ValidateCouponPipeline $validateCouponPipeline,
     )
     {
 
     }
 
-    public function handle(string $coupon): Coupon
+    public function handle(string $coupon, Customer|null $customer = null): Coupon
     {
         $basket = $this->basketRepository->get();
 
@@ -37,7 +38,7 @@ class ApplyCouponAction
             );
         }
 
-        $this->couponValidator->validate($basket, $coupon);
+        $this->validateCouponPipeline->handle($basket, $coupon, $customer);
 
         $basket->coupons = [
             new CouponItem(

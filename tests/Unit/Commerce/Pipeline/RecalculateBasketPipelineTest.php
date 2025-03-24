@@ -60,7 +60,6 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->productRepository->allows()->find('product-2')->andReturns($this->product2);
 
         $this->pipeline = new RecalculateBasketPipeline(
-            basketRepository: $this->basketRepository,
             clearDiscounts: new ClearDiscounts(),
             calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
             calculateLineItemSubtotals: new CalculateLineItemSubtotals(),
@@ -77,9 +76,7 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->addLineItemToBasket($this->product1, 2);
         $this->addLineItemToBasket($this->product2, 5);
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(1450, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
@@ -121,9 +118,7 @@ class RecalculateBasketPipelineTest extends TestCase
         $this->addLineItemToBasket($this->product1, 2); //100 = 200  * 0.2 = 40
         $this->addLineItemToBasket($this->product2, 5); // 250 = 1250 * 0.1 = 125
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(1450, $this->basket->subTotal);
         $this->assertEquals(165, $this->basket->taxTotal);
@@ -177,9 +172,7 @@ class RecalculateBasketPipelineTest extends TestCase
         ];
 
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(59500, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
@@ -222,10 +215,7 @@ class RecalculateBasketPipelineTest extends TestCase
             )
         ];
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
-
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(48000, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
@@ -266,9 +256,7 @@ class RecalculateBasketPipelineTest extends TestCase
             )
         ];
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(60000, $this->basket->subTotal);
         $this->assertEquals(0, $this->basket->taxTotal);
@@ -282,7 +270,6 @@ class RecalculateBasketPipelineTest extends TestCase
     public function test_existing_coupon_codes_get_removed_before_recalculating(): void
     {
         $this->addLineItemToBasket($this->product1, 5);
-        $this->basketRepository->allows()->save($this->basket);
 
         $coupon = $this->createProductCoupon(
             code: '20OFF',
@@ -303,7 +290,7 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->basket->coupons = [new CouponItem(id: 'coupon-id', coupon: $coupon)];
 
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertCount(1, $this->basket->discountItems);
     }
@@ -317,9 +304,7 @@ class RecalculateBasketPipelineTest extends TestCase
 
         $this->addLineItemToBasket($this->product1, 1);
 
-        $this->basketRepository->allows()->save($this->basket);
-
-        $this->pipeline->handle();
+        $this->pipeline->handle($this->basket);
 
         $this->assertEquals(20, $this->basket->taxTotal);
     }

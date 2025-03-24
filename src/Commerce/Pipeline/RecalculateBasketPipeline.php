@@ -2,45 +2,31 @@
 
 namespace AltDesign\AltCommerce\Commerce\Pipeline;
 
+use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemSubtotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemTax;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCouponsDiscounts;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\ClearDiscounts;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 
-class RecalculateBasketPipeline
+class RecalculateBasketPipeline extends Pipeline
 {
     public function __construct(
-        protected BasketRepository                 $basketRepository,
         protected ClearDiscounts                   $clearDiscounts,
-        protected CalculateProductCouponsDiscounts $calculateProductCouponDiscounts,
         protected CalculateLineItemSubtotals       $calculateLineItemSubtotals,
+        protected CalculateProductCouponsDiscounts $calculateProductCouponDiscounts,
         protected CalculateLineItemTax             $calculateLineItemTax,
         protected CalculateTaxItems                $calculateTaxItems,
         protected CalculateTotals                  $calculateTotals,
     )
     {
+        self::register(...func_get_args());
     }
 
-    public function handle(): void
+    public function handle(Basket $basket): void
     {
-        $basket = $this->basketRepository->get();
-
-        $stack = [
-            $this->clearDiscounts,
-            $this->calculateLineItemSubtotals,
-            $this->calculateProductCouponDiscounts,
-            $this->calculateLineItemTax,
-            $this->calculateTaxItems,
-            $this->calculateTotals,
-        ];
-
-        foreach ($stack as $job) {
-            $job->handle($basket);
-        }
-
-        $this->basketRepository->save($basket);
+        $this->run($basket);
     }
+
 }

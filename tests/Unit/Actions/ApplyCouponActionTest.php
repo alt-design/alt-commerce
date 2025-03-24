@@ -4,7 +4,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\ApplyCouponAction;
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
-use AltDesign\AltCommerce\Commerce\Discount\CouponValidator;
+use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCouponPipeline;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
 use AltDesign\AltCommerce\Enum\CouponNotValidReason;
@@ -21,7 +21,9 @@ class ApplyCouponActionTest extends TestCase
     protected $couponRepository;
     protected $recalculateBasketAction;
     protected $couponValidator;
+    protected $validateCouponPipeline;
     protected $action;
+
 
     protected function setUp(): void
     {
@@ -33,13 +35,13 @@ class ApplyCouponActionTest extends TestCase
 
         $this->recalculateBasketAction= Mockery::mock(RecalculateBasketAction::class);
 
-        $this->couponValidator = Mockery::mock(CouponValidator::class);
+        $this->validateCouponPipeline = Mockery::mock(ValidateCouponPipeline::class);
 
         $this->action = new ApplyCouponAction(
             basketRepository: $this->basketRepository,
             couponRepository: $this->couponRepository,
             recalculateBasketAction: $this->recalculateBasketAction,
-            couponValidator: $this->couponValidator,
+            validateCouponPipeline: $this->validateCouponPipeline,
         );
     }
 
@@ -48,7 +50,8 @@ class ApplyCouponActionTest extends TestCase
     {
         $this->couponRepository->shouldReceive('find')->with('GBP', 'SAVE20')->once()->andReturn($this->coupon);
         $this->recalculateBasketAction->shouldReceive('handle')->once();
-        $this->couponValidator->shouldReceive('validate')->once()->andReturn(true);
+        $this->validateCouponPipeline->allows('handle');
+
 
         $this->coupon->allows()->code()->andReturn('SAVE20');
         $this->action->handle('SAVE20');
@@ -63,6 +66,8 @@ class ApplyCouponActionTest extends TestCase
         $this->expectException(CouponNotValidException::class);
         $this->expectExceptionMessage(CouponNotValidReason::NOT_FOUND->value);
 
+        $this->validateCouponPipeline->allows('handle');
+
         $this->couponRepository->shouldReceive('find')->with('GBP', 'NOLONGER')->once()->andReturn(null);
 
         $this->action->handle('NOLONGER');
@@ -73,7 +78,7 @@ class ApplyCouponActionTest extends TestCase
         $this->expectException(CouponNotValidException::class);
 
         $this->couponRepository->shouldReceive('find')->with('GBP', 'SAVE20')->once()->andReturn($this->coupon);
-        $this->couponValidator->shouldReceive('validate')->once()->andThrow(new CouponNotValidException(
+        $this->validateCouponPipeline->shouldReceive('handle')->once()->andThrow(new CouponNotValidException(
             reason: CouponNotValidReason::NOT_ELIGIBLE,
         ));
 
