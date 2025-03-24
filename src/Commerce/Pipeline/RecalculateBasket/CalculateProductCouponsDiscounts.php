@@ -5,6 +5,7 @@ namespace AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineDiscount;
+use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\ProductCoupon;
 use AltDesign\AltCommerce\Enum\DiscountType;
 use Ramsey\Uuid\Uuid;
@@ -31,10 +32,13 @@ class CalculateProductCouponsDiscounts
             return;
         }
 
-        $discountTotal = $coupon->isPercentage() ?
-            $basket->subTotal * $coupon->discountAmount() / 100 :
-            $coupon->discountAmount();
+        $eligibleLineItems = $this->eligibleLineItems($basket, $coupon);
 
+        $eligibleSubTotal = array_sum(array_column($eligibleLineItems, 'subTotal'));
+
+        $discountTotal = $coupon->isPercentage() ?
+            $eligibleSubTotal * $coupon->discountAmount() / 100 :
+            $coupon->discountAmount();
 
         $discountItem = new DiscountItem(
             id: Uuid::uuid4()->toString(),
@@ -44,12 +48,8 @@ class CalculateProductCouponsDiscounts
             couponCode: $coupon->code(),
         );
 
-        foreach ($basket->lineItems as $item) {
 
-            if (!$coupon->isProductEligible($item->productId)) {
-                continue;
-            }
-
+        foreach ($eligibleLineItems as $item) {
             $item->discounts[] = new LineDiscount(
                 id: Uuid::uuid4()->toString(),
                 discountItemId: $discountItem->id,
@@ -64,6 +64,11 @@ class CalculateProductCouponsDiscounts
 
         $basket->subTotal = max($basket->subTotal - $discountTotal, 0);
 
+    }
+
+    protected function eligibleLineItems(Basket $basket, ProductCoupon $coupon): array
+    {
+        return array_filter($basket->lineItems, fn(LineItem $item) => $coupon->isProductEligible($item->productId));
     }
 
 }
