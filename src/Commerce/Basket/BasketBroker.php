@@ -50,7 +50,7 @@ class BasketBroker
             context: $context
         );
 
-        if (empty($config['with'])) {
+        if (!empty($config['with'])) {
             $this->resolver->resolve($config['with'], [
                 'context' => $context,
                 'config' => $config,
