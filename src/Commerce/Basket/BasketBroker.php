@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
+use AltDesign\AltCommerce\Contracts\BasketContextBuilder;
 use AltDesign\AltCommerce\Contracts\BasketDriverFactory;
 use AltDesign\AltCommerce\Contracts\Resolver;
 
@@ -40,17 +41,26 @@ class BasketBroker
         }
 
         $factory = $this->driver($driver);
+        $context = new BasketContext(
+            resolver: $this->resolver,
+            driver: $factory->create(
+                resolver: $this->resolver,
+                config: $config,
+            ),
+            context: $context
+        );
+
+        if (empty($config['with'])) {
+            $this->resolver->resolve($config['with'], [
+                'context' => $context,
+                'config' => $config,
+            ])->run();
+        }
+
         $instance = [
             'driverName' => $driver,
             'context' => $context,
-            'basket' => new BasketContext(
-                resolver: $this->resolver,
-                driver: $factory->create(
-                    resolver: $this->resolver,
-                    config: $config,
-                ),
-                context: $context
-            )
+            'basket' => $context
         ];
 
         $this->instances[] = $instance;
