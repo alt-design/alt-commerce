@@ -2,24 +2,29 @@
 
 namespace AltDesign\AltCommerce\Commerce\Payment;
 
-use AltDesign\AltCommerce\Contracts\BasketRepository;
-use AltDesign\AltCommerce\Contracts\Customer;
+use AltDesign\AltCommerce\Contracts\Resolver;
 
 class PaymentManager
 {
     public function __construct(
+        protected Resolver $resolver,
         protected GatewayBroker $gatewayBroker,
-        protected BasketRepository $basketRepository,
     )
     {
 
     }
 
-    public function authToken(Customer|null $customer = null): string
+    public function currency(string $currency): PaymentContext
     {
-        $basket = $this->basketRepository->get();
-        return $this->gatewayBroker->currency($basket->currency)->gateway()->createPaymentNonceAuthToken(
-            new GenerateAuthTokenRequest(customer: $customer)
+        return $this->context($currency);
+    }
+
+    protected function context(string $currency): PaymentContext
+    {
+        return new PaymentContext(
+            resolver: $this->resolver,
+            gatewayBroker: $this->gatewayBroker,
+            currency: $currency
         );
     }
 }

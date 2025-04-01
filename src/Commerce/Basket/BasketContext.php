@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
+use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Contracts\BasketDriver;
 use AltDesign\AltCommerce\Contracts\Resolver;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
@@ -46,7 +47,8 @@ class BasketContext
         $action = $this->resolveWithContext($action);
         $result = $action->handle(...$arguments);
 
-        $this->recalculateBasket();
+        $recalculateAction = $this->resolveWithContext(RecalculateBasketAction::class);
+        $recalculateAction->handle();
         return $result;
     }
 

@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Commerce\Shipping;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ShippingMethodRepository;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
 use AltDesign\AltCommerce\Support\Money;
@@ -11,7 +10,6 @@ class ShippingManager
 {
     public function __construct(
         protected ShippingMethodRepository $shippingMethodRepository,
-        protected BasketRepository $basketRepository,
         protected RuleManager $ruleManager,
     )
     {
