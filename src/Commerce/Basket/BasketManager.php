@@ -22,7 +22,7 @@ class BasketManager
 
     public function context(string $context): BasketContext
     {
-        return $this->driver('default')->context($context);
+        return $this->broker->context($context);
     }
 
     public function __call($name, $arguments)
