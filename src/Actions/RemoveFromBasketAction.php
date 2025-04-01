@@ -2,13 +2,12 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
-use AltDesign\AltCommerce\Contracts\BasketRepository;
-
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 class RemoveFromBasketAction
 {
 
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected RecalculateBasketAction $recalculateBasketAction,
     )
     {
@@ -17,7 +16,7 @@ class RemoveFromBasketAction
 
     public function handle(string ...$productIds): void
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
         foreach ($productIds as $productId) {
             foreach ($basket->lineItems as $key => $item) {
                 if ($item->productId === $productId ) {
@@ -31,7 +30,6 @@ class RemoveFromBasketAction
                 }
             }
         }
-        $this->basketRepository->save($basket);
         $this->recalculateBasketAction->handle();
     }
 }

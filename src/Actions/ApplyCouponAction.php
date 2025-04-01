@@ -3,9 +3,9 @@
 namespace AltDesign\AltCommerce\Actions;
 
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCouponPipeline;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
@@ -17,7 +17,7 @@ class ApplyCouponAction
 {
 
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected CouponRepository $couponRepository,
         protected RecalculateBasketAction $recalculateBasketAction,
         protected ValidateCouponPipeline $validateCouponPipeline,
@@ -28,7 +28,7 @@ class ApplyCouponAction
 
     public function handle(string $coupon, Customer|null $customer = null): Coupon
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $coupon = $this->couponRepository->find($basket->currency, $coupon);
 
@@ -39,8 +39,8 @@ class ApplyCouponAction
         }
 
         $this->validateCouponPipeline->handle(
-            basket: $basket,
             coupon: $coupon,
+            basket: $basket,
             customer: $customer
         );
 

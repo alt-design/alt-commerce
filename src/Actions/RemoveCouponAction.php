@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\Actions;
 
 
-use AltDesign\AltCommerce\Contracts\BasketRepository;
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Enum\CouponNotValidReason;
 use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
@@ -12,7 +12,7 @@ use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 class RemoveCouponAction
 {
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected RecalculateBasketAction $recalculateBasketAction,
     )
     {
@@ -21,7 +21,7 @@ class RemoveCouponAction
 
     public function handle(string $code): Coupon
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $found = false;
 
@@ -37,7 +37,6 @@ class RemoveCouponAction
             throw new CouponNotValidException(reason: CouponNotValidReason::NOT_FOUND);
         }
 
-        $this->basketRepository->save($basket);
         $this->recalculateBasketAction->handle();
         return $found;
     }

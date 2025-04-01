@@ -4,12 +4,19 @@ namespace AltDesign\AltCommerce\Commerce\Basket;
 
 use AltDesign\AltCommerce\Contracts\BasketDriver;
 use AltDesign\AltCommerce\Contracts\Resolver;
+use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 /**
  * @method int addToBasket(string $productId, int $quantity = 1, int $price = null, array $options = [])
+ * @method LineItem[] lineItems()
+ * @method BillingItem[] billingItems()
  */
 class BasketContext
 {
+    use InteractWithBasket {
+        InteractWithBasket::find as traitFind;
+    }
+
     public function __construct(protected Resolver $resolver, protected BasketDriver $driver, protected string $context)
     {
 
@@ -24,6 +31,11 @@ class BasketContext
 
     public function __call($name, $arguments)
     {
+
+        if (property_exists($this->current(), $name)) {
+            return call_user_func_array([$this->current(), $name], $arguments);
+        }
+
         $action = 'AltDesign\\AltCommerce\\Actions\\'.$name.'Action';
         if (!class_exists($action)) {
             throw new \BadMethodCallException("Action {$name} does not exist");
@@ -35,69 +47,15 @@ class BasketContext
 
     public function find(string $productId): LineItem|BillingItem|null
     {
-        return $this->traitFind($this->basket, $productId);
+        return $this->traitFind($this->current(), $productId);
     }
 
-    public function currency(): string
-    {
-        return $this->basket->currency;
-    }
 
-    public function countryCode(): string
-    {
-        return $this->basket->countryCode;
-    }
-
-    public function total(): int
-    {
-        return $this->basket->total;
-    }
-
-    public function subTotal(): int
-    {
-        return $this->basket->subTotal;
-    }
-
-    public function taxTotal(): int
-    {
-        return $this->basket->taxTotal;
-    }
-
-    public function deliveryTotal(): int
-    {
-        return $this->basket->deliveryTotal;
-    }
-
-    public function feeTotal(): int
-    {
-        return $this->basket->feeTotal;
-    }
-
-    public function discountTotal(): int
-    {
-        return $this->basket->discountTotal;
-    }
 
     public function tap(callable $callback): BasketContext
     {
         $callback($this);
         return $this;
-    }
-
-    /**
-     * @return LineItem[]
-     */
-    public function lineItems(): array
-    {
-        return $this->basket->lineItems;
-    }
-
-    /**
-     * @return BillingItem[]
-     */
-    public function billingItems(): array
-    {
-        return $this->basket->billingItems;
     }
 
     /**
@@ -108,7 +66,7 @@ class BasketContext
     {
         if ($grouped) {
             $grouped = [];
-            foreach ($this->basket->taxItems as $taxItem) {
+            foreach ($this->current()->taxItems as $taxItem) {
 
 
                 if (isset($grouped[$taxItem->name])) {
@@ -125,40 +83,9 @@ class BasketContext
             return $grouped;
 
         }
-        return $this->basket->taxItems;
+        return $this->current()->taxItems;
     }
 
-    /**
-     * @return DeliveryItem[]
-     */
-    public function deliveryItems(): array
-    {
-        return $this->basket->deliveryItems;
-    }
-
-    /**
-     * @return FeeItem[]
-     */
-    public function feeItems(): array
-    {
-        return $this->basket->feeItems;
-    }
-
-    /**
-     * @return CouponItem[]
-     */
-    public function coupons(): array
-    {
-        return $this->basket->coupons;
-    }
-
-    /**
-     * @return DiscountItem[]
-     */
-    public function discountItems(): array
-    {
-        return $this->basket->discountItems;
-    }
 
     public function isEmpty(): bool
     {
@@ -174,5 +101,10 @@ class BasketContext
     public function current(): Basket
     {
         return $this->driver->get();
+    }
+
+    public function clear(): void
+    {
+        $this->driver->delete();
     }
 }

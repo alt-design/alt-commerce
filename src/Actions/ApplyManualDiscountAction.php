@@ -2,15 +2,15 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Enum\DiscountType;
 use Ramsey\Uuid\Uuid;
 
 class ApplyManualDiscountAction
 {
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected RecalculateBasketAction $recalculateBasketAction
     ) {
 
@@ -25,7 +25,7 @@ class ApplyManualDiscountAction
             type: DiscountType::MANUAL
         );
 
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $basket->discountItems[] = $discountItem;
 

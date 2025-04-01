@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Order\Order;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\Customer;
@@ -12,7 +13,7 @@ class CreateOrderAction
 {
 
     public function __construct(
-        protected BasketRepository   $basketRepository,
+        protected BasketContext $context,
         protected OrderRepository    $orderRepository,
         protected OrderFactory       $orderFactory,
     )
@@ -25,7 +26,7 @@ class CreateOrderAction
      */
     public function handle(Customer $customer, array $additional = [], \DateTimeImmutable|null $orderDate = null): Order
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $order = $this->orderRepository->findByBasketId($basket->id);
 

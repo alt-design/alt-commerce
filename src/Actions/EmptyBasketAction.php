@@ -2,13 +2,13 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
-use AltDesign\AltCommerce\Contracts\BasketRepository;
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 
 class EmptyBasketAction
 {
 
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected RecalculateBasketAction $recalculateBasketAction,
     )
     {
@@ -17,7 +17,7 @@ class EmptyBasketAction
 
     public function handle(): void
     {
-        $this->basketRepository->delete();
+        $this->context->clear();
         $this->recalculateBasketAction->handle();
     }
 

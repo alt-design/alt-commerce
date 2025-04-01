@@ -2,8 +2,8 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 
@@ -12,7 +12,7 @@ class RecalculateBasketAction
     use InteractWithBasket;
 
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected RecalculateBasketPipeline $recalculateBasketPipeline,
     )
     {
@@ -21,8 +21,8 @@ class RecalculateBasketAction
 
     public function handle(): void
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
         $this->recalculateBasketPipeline->handle($basket);
-        $this->basketRepository->save($basket);
+        $this->context->save($basket);
     }
 }

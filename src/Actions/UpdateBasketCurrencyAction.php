@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\Settings;
@@ -10,6 +11,7 @@ use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 class UpdateBasketCurrencyAction
 {
     public function __construct(
+        protected BasketContext $context,
         protected BasketRepository $basketRepository,
         protected ProductRepository $productRepository,
         protected RecalculateBasketAction $recalculateBasketAction,
@@ -21,7 +23,7 @@ class UpdateBasketCurrencyAction
 
     public function handle(string $currency): void
     {
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $currency = strtoupper($currency);
 

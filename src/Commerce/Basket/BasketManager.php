@@ -3,17 +3,11 @@
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
 
-use AltDesign\AltCommerce\Traits\InteractWithBasket;
-
 /**
  * @method int total()
  */
 class BasketManager
 {
-    use InteractWithBasket {
-        InteractWithBasket::find as traitFind;
-    }
-
     public function __construct(
         protected BasketBroker $broker,
     )
@@ -26,14 +20,14 @@ class BasketManager
         return $this->broker->context($context);
     }
 
-    public function __call($method, $parameters)
+    public function __call($name, $arguments)
     {
         $context = $this->context('default');
 
-        if (method_exists($context, $method)) {
-            return call_user_func_array([$context, $method], $parameters);
+        if (method_exists($context, $name)) {
+            return call_user_func_array([$context, $name], $arguments);
         }
 
-        throw new \BadMethodCallException("Method [$method] does not exist.");
+        throw new \BadMethodCallException("Method [$name] does not exist.");
     }
 }
