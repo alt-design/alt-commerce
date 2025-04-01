@@ -15,10 +15,10 @@ class BasketManager
     protected Basket $basket;
 
     public function __construct(
-        BasketRepository $basketRepository,
+        protected BasketBroker $broker,
     )
     {
-        $this->basket = $basketRepository->get();
+        $this->basket = $this->broker->context()->get();
     }
 
     public function find(string $productId): LineItem|BillingItem|null
@@ -145,5 +145,11 @@ class BasketManager
     public function isEmpty(): bool
     {
         return empty($this->lineItems()) && empty($this->billingItems());
+    }
+
+    public function context(string $context): self
+    {
+        $this->basket = $this->broker->context($context);
+        return $this;
     }
 }
