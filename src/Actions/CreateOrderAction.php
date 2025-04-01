@@ -30,7 +30,7 @@ class CreateOrderAction
         $order = $this->orderRepository->findByBasketId($basket->id);
 
         $orderId = $order?->id;
-        $orderNumber  = $order ? $order->id : $this->orderRepository->reserveOrderNumber();
+        $orderNumber  = $order ? $order->orderNumber : $this->orderRepository->reserveOrderNumber();
 
         $order = $this->orderFactory->createFromBasket(
             orderNumber: $orderNumber,

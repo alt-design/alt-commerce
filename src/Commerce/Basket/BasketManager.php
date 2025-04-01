@@ -15,9 +15,14 @@ class BasketManager
 
     }
 
+    public function driver(string $driver, array $config = []): BasketContextFactory
+    {
+        return new BasketContextFactory(broker: $this->broker, driver: $driver, config: $config);
+    }
+
     public function context(string $context): BasketContext
     {
-        return $this->broker->context($context);
+        return $this->driver('default')->context($context);
     }
 
     public function __call($name, $arguments)

@@ -19,7 +19,11 @@ class BasketContext
         InteractWithBasket::find as traitFind;
     }
 
-    public function __construct(protected Resolver $resolver, protected BasketDriver $driver, protected string $context)
+    public function __construct(
+        protected Resolver $resolver,
+        protected BasketDriver $driver,
+        protected string $context
+    )
     {
 
     }
@@ -114,4 +118,5 @@ class BasketContext
     {
         $this->driver->delete();
     }
+
 }
