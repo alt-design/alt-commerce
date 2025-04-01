@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Commerce\Basket;
 
 use AltDesign\AltCommerce\BasketDrivers\Request\RequestBasketDriverFactory;
-use AltDesign\AltCommerce\Contracts\BasketDriver;
 use AltDesign\AltCommerce\Contracts\Resolver;
 
 class BasketBroker
@@ -23,7 +22,7 @@ class BasketBroker
 
     }
 
-    public function context(string $context = 'default'): BasketDriver
+    public function context(string $context = 'default'): BasketContext
     {
         if (!array_key_exists($context, $this->config)) {
             throw new \Exception("No basket configuration found for '{$context}'");
@@ -40,7 +39,7 @@ class BasketBroker
     }
 
 
-    protected function obtainNewContext(string $context, array $config): BasketDriver
+    protected function obtainNewContext(string $context, array $config): BasketContext
     {
 
         $driver = $config['driver'] ?? '';
@@ -50,10 +49,17 @@ class BasketBroker
 
         unset($config['driver']);
 
-        return (new self::$drivers[$driver]())->create(
+        $driver = (new self::$drivers[$driver]())->create(
             resolver: $this->resolver,
             config: $config,
         );
+
+        return new BasketContext(
+            resolver: $this->resolver,
+            driver: $driver,
+            context: $context
+        );
+
     }
 
 }

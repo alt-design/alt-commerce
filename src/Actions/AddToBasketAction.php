@@ -2,12 +2,11 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Exceptions\BasketException;
-use AltDesign\AltCommerce\Exceptions\BillingPlanAlreadyInBasketException;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
@@ -19,7 +18,7 @@ class AddToBasketAction
     use InteractWithBasket;
 
     public function __construct(
-        protected BasketRepository $basketRepository,
+        protected BasketContext $context,
         protected ProductRepository $productRepository,
         protected RecalculateBasketAction $recalculateBasketAction,
     )
@@ -32,7 +31,8 @@ class AddToBasketAction
      */
     public function handle(string $productId, int $quantity = 1, int $price = null, array $options = []): void
     {
-        $basket = $this->basketRepository->get();
+
+        $basket = $this->context->current();
 
         $existing = $this->find($basket, $productId);
 
