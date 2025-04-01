@@ -21,7 +21,6 @@ class BasketManager
 
     }
 
-
     public function context(string $context): BasketContext
     {
         return $this->broker->context($context);

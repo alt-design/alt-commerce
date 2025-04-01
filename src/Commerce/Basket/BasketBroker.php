@@ -8,7 +8,7 @@ use AltDesign\AltCommerce\Contracts\Resolver;
 class BasketBroker
 {
 
-    protected static array $drivers = [
+    public static array $drivers = [
         'request' => RequestBasketDriverFactory::class,
     ];
 

@@ -5,10 +5,31 @@ namespace AltDesign\AltCommerce\Commerce\Basket;
 use AltDesign\AltCommerce\Contracts\BasketDriver;
 use AltDesign\AltCommerce\Contracts\Resolver;
 
+/**
+ * @method int addToBasket(string $productId, int $quantity = 1, int $price = null, array $options = [])
+ */
 class BasketContext
 {
     public function __construct(protected Resolver $resolver, protected BasketDriver $driver, protected string $context)
     {
+
+    }
+
+    protected function resolveWithContext(string $abstract)
+    {
+        return $this->resolver->resolve($abstract, [
+            'context' => $this
+        ]);
+    }
+
+    public function __call($name, $arguments)
+    {
+        $action = 'AltDesign\\AltCommerce\\Actions\\'.$name.'Action';
+        if (!class_exists($action)) {
+            throw new \BadMethodCallException("Action {$name} does not exist");
+        }
+
+        return $this->resolveWithContext($action)->handle(...$arguments);
 
     }
 
@@ -145,11 +166,10 @@ class BasketContext
     }
 
 
-    public function save(): void
+    public function save(Basket $basket): void
     {
-       $this->driver->save($this->current());
+       $this->driver->save($basket);
     }
-
 
     public function current(): Basket
     {
