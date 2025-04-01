@@ -22,12 +22,6 @@ class BasketManager
 
     public function __call($name, $arguments)
     {
-        $context = $this->context('default');
-
-        if (method_exists($context, $name)) {
-            return call_user_func_array([$context, $name], $arguments);
-        }
-
-        throw new \BadMethodCallException("Method [$name] does not exist.");
+        return call_user_func_array([$this->context('default'), $name], $arguments);
     }
 }

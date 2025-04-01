@@ -19,7 +19,6 @@ class ApplyCouponAction
     public function __construct(
         protected BasketContext $context,
         protected CouponRepository $couponRepository,
-        protected RecalculateBasketAction $recalculateBasketAction,
         protected ValidateCouponPipeline $validateCouponPipeline,
     )
     {
@@ -50,8 +49,6 @@ class ApplyCouponAction
                 coupon: $coupon
             )
         ];
-
-        $this->recalculateBasketAction->handle();
 
         return $coupon;
     }

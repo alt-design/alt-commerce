@@ -10,8 +10,7 @@ use Ramsey\Uuid\Uuid;
 class ApplyManualDiscountAction
 {
     public function __construct(
-        protected BasketContext $context,
-        protected RecalculateBasketAction $recalculateBasketAction
+        protected BasketContext $context
     ) {
 
     }
@@ -28,8 +27,6 @@ class ApplyManualDiscountAction
         $basket = $this->context->current();
 
         $basket->discountItems[] = $discountItem;
-
-        $this->recalculateBasketAction->handle();
 
     }
 }

@@ -14,8 +14,7 @@ class UpdateBasketQuantityAction
     use InteractWithBasket;
 
     public function __construct(
-        protected BasketContext $context,
-        protected RecalculateBasketAction $recalculateBasketAction,
+        protected BasketContext $context
     )
     {
 
@@ -33,6 +32,5 @@ class UpdateBasketQuantityAction
             throw new BasketException('Unable to update quantity of billing item');
         }
         $existing->quantity = $quantity;
-        $this->recalculateBasketAction->handle();
     }
 }

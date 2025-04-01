@@ -8,6 +8,7 @@ use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 /**
  * @method int addToBasket(string $productId, int $quantity = 1, int $price = null, array $options = [])
+ * @method void recalculateBasket()
  * @method LineItem[] lineItems()
  * @method BillingItem[] billingItems()
  */
@@ -33,16 +34,20 @@ class BasketContext
     {
 
         if (property_exists($this->current(), $name)) {
-            return call_user_func_array([$this->current(), $name], $arguments);
+            return $this->current()->$name;
         }
 
-        $action = 'AltDesign\\AltCommerce\\Actions\\'.$name.'Action';
+        $action = 'AltDesign\\AltCommerce\\Actions\\'.ucfirst($name).'Action';
         if (!class_exists($action)) {
             throw new \BadMethodCallException("Action {$name} does not exist");
         }
 
-        return $this->resolveWithContext($action)->handle(...$arguments);
+        // Todo, need some form of Action context here, the ability to perform other actions after the primary one
+        $action = $this->resolveWithContext($action);
+        $result = $action->handle(...$arguments);
 
+        $this->recalculateBasket();
+        return $result;
     }
 
     public function find(string $productId): LineItem|BillingItem|null

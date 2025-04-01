@@ -14,7 +14,6 @@ class UpdateBasketCurrencyAction
         protected BasketContext $context,
         protected BasketRepository $basketRepository,
         protected ProductRepository $productRepository,
-        protected RecalculateBasketAction $recalculateBasketAction,
         protected Settings $settings,
     )
     {
@@ -62,6 +61,5 @@ class UpdateBasketCurrencyAction
 
         $basket->currency = $currency;
 
-        $this->recalculateBasketAction->handle();
     }
 }

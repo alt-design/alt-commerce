@@ -7,8 +7,7 @@ class RemoveFromBasketAction
 {
 
     public function __construct(
-        protected BasketContext $context,
-        protected RecalculateBasketAction $recalculateBasketAction,
+        protected BasketContext $context
     )
     {
 
@@ -30,6 +29,5 @@ class RemoveFromBasketAction
                 }
             }
         }
-        $this->recalculateBasketAction->handle();
     }
 }

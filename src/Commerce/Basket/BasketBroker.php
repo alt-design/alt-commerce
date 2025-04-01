@@ -31,7 +31,7 @@ class BasketBroker
         if (!in_array($context, $this->baskets)) {
             $this->baskets[$context] = $this->obtainNewContext(
                 context: $context,
-                config: $this->config['context'],
+                config: $this->config[$context],
             );
         }
 

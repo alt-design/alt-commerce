@@ -12,8 +12,7 @@ use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
 class RemoveCouponAction
 {
     public function __construct(
-        protected BasketContext $context,
-        protected RecalculateBasketAction $recalculateBasketAction,
+        protected BasketContext $context
     )
     {
 
@@ -37,7 +36,6 @@ class RemoveCouponAction
             throw new CouponNotValidException(reason: CouponNotValidReason::NOT_FOUND);
         }
 
-        $this->recalculateBasketAction->handle();
         return $found;
     }
 }

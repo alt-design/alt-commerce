@@ -9,7 +9,6 @@ class EmptyBasketAction
 
     public function __construct(
         protected BasketContext $context,
-        protected RecalculateBasketAction $recalculateBasketAction,
     )
     {
 
@@ -18,7 +17,6 @@ class EmptyBasketAction
     public function handle(): void
     {
         $this->context->clear();
-        $this->recalculateBasketAction->handle();
     }
 
 }

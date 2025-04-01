@@ -19,8 +19,7 @@ class AddToBasketAction
 
     public function __construct(
         protected BasketContext $context,
-        protected ProductRepository $productRepository,
-        protected RecalculateBasketAction $recalculateBasketAction,
+        protected ProductRepository $productRepository
     )
     {
 
@@ -42,7 +41,7 @@ class AddToBasketAction
 
         if ($existing instanceof LineItem) {
             $existing->quantity += $quantity;
-            $this->recalculateBasketAction->handle();
+            $this->context->recalculateBasket();
             return;
         }
 
@@ -84,7 +83,5 @@ class AddToBasketAction
                 productData: $product->data(),
             );
         }
-
-        $this->recalculateBasketAction->handle();
     }
 }
