@@ -159,7 +159,7 @@ class BraintreeGateway implements PaymentGateway
         return $billingPlan;
     }
 
-    function splitName(string $fullName): array
+    protected function splitName(string $fullName): array
     {
         $fullName = trim(preg_replace('/\s+/', ' ', $fullName));
 
