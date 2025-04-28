@@ -159,14 +159,38 @@ class BraintreeGateway implements PaymentGateway
         return $billingPlan;
     }
 
+    function splitName(string $fullName): array
+    {
+        $fullName = trim(preg_replace('/\s+/', ' ', $fullName));
+
+        if (empty($fullName)) {
+            return [
+                'firstName' => null,
+                'lastName' => null,
+            ];
+        }
+
+        $nameParts = explode(' ', $fullName);
+
+        return [
+            'firstName' => $nameParts[0],
+            'lastName' => count($nameParts) > 1 ? implode(' ', array_slice($nameParts, 1)) : null,
+        ];
+    }
+
     protected function saveCustomer(Customer $customer): string
     {
         $id = $customer->findGatewayId($this->name);
+
+        $names = $this->splitName($customer->name);
+
         if (empty($id)) {
             $id = $this->client->request(fn(Gateway $gateway) =>
             $gateway
                 ->customer()
                 ->create([
+                    'firstName' => $names['firstName'],
+                    'lastName' => $names['lastName'],
                     'email' => $customer->customerEmail()
                 ])
             )->customer->id;
@@ -176,7 +200,6 @@ class BraintreeGateway implements PaymentGateway
 
         return $id;
     }
-
     protected function createPaymentMethod(string $gatewayCustomerId, string $paymentNonce): string
     {
         $result = $this->client->request(fn(Gateway $gateway) =>
