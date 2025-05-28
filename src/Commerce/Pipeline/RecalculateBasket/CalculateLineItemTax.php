@@ -6,9 +6,15 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 
 class CalculateLineItemTax
 {
+    public static array $skip = [];
+
     public function handle(Basket $basket): void
     {
         foreach ($basket->lineItems as $lineItem) {
+
+            if (in_array($lineItem->id, self::$skip)) {
+                continue;
+            }
 
             $taxRules = [];
             foreach ($lineItem->taxRules as $taxRule) {

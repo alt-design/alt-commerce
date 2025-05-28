@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\Actions;
 
 use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
+use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Order\Order;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\OrderFactory;
@@ -23,7 +24,13 @@ class CreateOrderAction
     /**
      * @param array<string, mixed> $additional
      */
-    public function handle(Customer $customer, array $additional = [], \DateTimeImmutable|null $orderDate = null): Order
+    public function handle(
+        Customer $customer,
+        Address|null $billingAddress = null,
+        Address|null $shippingAddress = null,
+        array $additional = [],
+        \DateTimeImmutable|null $orderDate = null
+    ): Order
     {
         $basket = $this->context->current();
 
@@ -36,6 +43,8 @@ class CreateOrderAction
             orderNumber: $orderNumber,
             basket: $basket,
             customer: $customer,
+            billingAddress: $billingAddress,
+            shippingAddress: $shippingAddress,
             additional: $additional,
             orderId: $orderId,
             orderDate: $orderDate,

@@ -9,6 +9,9 @@ use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 /**
  * @method int addToBasket(string $productId, int $quantity = 1, int $price = null, array $options = [])
+ * @method void updateBasketCountry(string $countryCode)
+ * @method void updateBasketCurrency(string $currency)
+ * @method void applyManualDiscount(string $amount, string $description)
  * @method void recalculateBasket()
  * @method LineItem[] lineItems()
  * @method BillingItem[] billingItems()
