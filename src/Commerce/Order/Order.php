@@ -30,7 +30,7 @@ abstract class Order
      */
     public function __construct(
         public string $id,
-        public Customer $customer,
+        public ?Customer $customer,
         public OrderStatus $status,
         public string $currency,
         public string $orderNumber,
