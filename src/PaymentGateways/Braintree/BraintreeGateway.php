@@ -324,7 +324,9 @@ class BraintreeGateway implements PaymentGateway
             'postalCode' => $address->postalCode,
             'region' => $address->region,
             'streetAddress' => $address->street,
-            'phoneNumber' => $address->phoneNumber,
+            // todo Braintree will throw an exception if the phone number is not valid
+            // this needs validating before hand.
+            //'phoneNumber' => $address->phoneNumber,
         ];
     }
 
