@@ -5,6 +5,7 @@ namespace AltDesign\AltCommerce\PaymentGateways\Braintree;
 
 use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
+use AltDesign\AltCommerce\Contracts\CustomerRepository;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\PaymentGatewayFactory;
 use AltDesign\AltCommerce\Contracts\Resolver;
@@ -47,6 +48,7 @@ class BraintreeGatewayFactory implements PaymentGatewayFactory
             client: new BraintreeApiClient(
                 gateway: $gateway
             ),
+            customerRepository: $this->resolver->resolve(CustomerRepository::class),
         );
 
     }
