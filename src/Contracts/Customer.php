@@ -9,9 +9,4 @@ interface Customer
     public function customerEmail(): string;
 
     public function customerName(): string;
-
-    /**
-     * @return array<string,mixed>
-     */
-    public function customerAdditionalData(): array;
 }
