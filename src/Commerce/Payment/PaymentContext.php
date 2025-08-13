@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Commerce\Payment;
 
-use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Contracts\Resolver;
 
 class PaymentContext
@@ -16,11 +15,10 @@ class PaymentContext
 
     }
 
-
-    public function authToken(Customer|null $customer = null): string
+    public function authToken(string|null $customerId = null): string
     {
         return $this->gatewayBroker->currency($this->currency)->gateway()->createPaymentNonceAuthToken(
-            new GenerateAuthTokenRequest(customer: $customer)
+            new GenerateAuthTokenRequest(customerId: $customerId)
         );
     }
 }

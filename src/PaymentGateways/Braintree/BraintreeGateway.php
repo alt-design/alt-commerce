@@ -10,7 +10,7 @@ use AltDesign\AltCommerce\Commerce\Payment\GenerateAuthTokenRequest;
 use AltDesign\AltCommerce\Commerce\Payment\ProcessOrderRequest;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
-use AltDesign\AltCommerce\Contracts\Customer;
+use AltDesign\AltCommerce\Contracts\CustomerRepository;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Enum\DurationUnit;
@@ -31,6 +31,7 @@ class BraintreeGateway implements PaymentGateway
         protected SubscriptionFactory $subscriptionFactory,
         protected Settings $settings,
         protected BraintreeApiClient $client,
+        protected CustomerRepository $customerRepository,
     )
     {
 
@@ -44,10 +45,14 @@ class BraintreeGateway implements PaymentGateway
             throw new PaymentGatewayException('Billing address is required for braintree');
         }
 
-        $braintreeCustomerId = $this->saveCustomer($order->customer);
+        $braintreeCustomerId = $this->saveCustomer($order->customerId);
         //$braintreePaymentMethodToken = $this->createPaymentMethod($braintreeCustomerId, $request->gatewayPaymentNonce);
 
-        $order->customer->setGatewayId($request->gatewayName, $braintreeCustomerId);
+        $this->customerRepository->setGatewayId(
+            customerId: $order->customerId,
+            gatewayName: $request->gatewayName,
+            gatewayId: $braintreeCustomerId,
+        );
 
         if (!empty($order->total)) {
             $result = $this->createCharge(
@@ -102,8 +107,8 @@ class BraintreeGateway implements PaymentGateway
         $params = [
             'merchantAccountId' => $this->merchantAccountId,
         ];
-        if (!empty($request->customer)) {
-            $params['customerId'] = $this->saveCustomer($request->customer);
+        if (!empty($request->customerId)) {
+            $params['customerId'] = $this->saveCustomer($request->customerId);
         }
 
         // @phpstan-ignore-next-line
@@ -178,11 +183,14 @@ class BraintreeGateway implements PaymentGateway
         ];
     }
 
-    protected function saveCustomer(Customer $customer): string
+    protected function saveCustomer(string $customerId): string
     {
-        $id = $customer->findGatewayId($this->name);
 
-        $names = $this->splitName($customer->name);
+        $customer = $this->customerRepository->find($customerId) ?? throw new \Exception('Customer not found');
+
+        $id = $this->customerRepository->findGatewayId(customerId: $customerId, gatewayName: $this->name);
+
+        $names = $this->splitName($customer->customerName());
 
         if (empty($id)) {
             $id = $this->client->request(fn(Gateway $gateway) =>
@@ -195,7 +203,11 @@ class BraintreeGateway implements PaymentGateway
                 ])
             )->customer->id;
 
-            $customer->setGatewayId($this->name, $id);
+            $this->customerRepository->setGatewayId(
+                customerId: $customerId,
+                gatewayName: $this->name,
+                gatewayId: $id,
+            );
         }
 
         return $id;

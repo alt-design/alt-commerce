@@ -11,7 +11,6 @@ use AltDesign\AltCommerce\Commerce\Basket\TaxItem;
 use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
-use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Enum\OrderStatus;
 use DateTimeImmutable;
 
@@ -30,7 +29,9 @@ abstract class Order
      */
     public function __construct(
         public string $id,
-        public ?Customer $customer,
+        public string $customerId,
+        public string $customerName,
+        public string $customerEmail,
         public OrderStatus $status,
         public string $currency,
         public string $orderNumber,

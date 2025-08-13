@@ -8,9 +8,7 @@ interface Customer
 
     public function customerEmail(): string;
 
-    public function findGatewayId(string $gateway): null|string;
-
-    public function setGatewayId(string $gateway, string $gatewayId): void;
+    public function customerName(): string;
 
     /**
      * @return array<string,mixed>
