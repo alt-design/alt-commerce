@@ -6,6 +6,7 @@ use AltDesign\AltCommerce\Contracts\PaymentGatewayDriver;
 use AltDesign\AltCommerce\Contracts\Resolver;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use AltDesign\AltCommerce\PaymentGateways\Braintree\BraintreeGatewayDriver;
+use AltDesign\AltCommerce\PaymentGateways\Stripe\StripeGatewayDriver;
 
 class GatewayBroker
 {
@@ -80,6 +81,7 @@ class GatewayBroker
     {
         return [
             'braintree' => BraintreeGatewayDriver::class,
+            'stripe' => StripeGatewayDriver::class,
         ];
     }
 }

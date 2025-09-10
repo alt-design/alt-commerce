@@ -6,6 +6,7 @@ use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use Ramsey\Uuid\Uuid;
+use Stripe\PaymentIntent;
 
 class TransactionFactory
 {
@@ -13,6 +14,7 @@ class TransactionFactory
     {
         return match ($driver) {
             'braintree' => $this->fromBraintreeTransaction($gateway, $data),
+            'stripe' => throw new \Exception('Stripe transaction not supported'),
             default => throw new \Exception('Transaction gateway not supported')
         };
     }
@@ -31,6 +33,31 @@ class TransactionFactory
             gateway: $gateway,
             gatewayId: $transaction->id,
         );
+    }
+
+    public function fromStripePaymentIntent(string $gateway, PaymentIntent $paymentIntent): Transaction
+    {
+        return new Transaction(
+            id: Uuid::uuid4(),
+            type: TransactionType::SALE,
+            status: match($paymentIntent->status) {
+                'requires_payment_method' => TransactionStatus::PENDING,
+                'requires_confirmation' => TransactionStatus::PENDING,
+                'requires_action' => TransactionStatus::PENDING,
+                'processing' => TransactionStatus::PENDING,
+                'requires_capture' => TransactionStatus::PENDING,
+                'canceled' => TransactionStatus::FAILED,
+                'succeeded' => TransactionStatus::SETTLED,
+            },
+            currency: $paymentIntent->currency,
+            amount: $paymentIntent->amount,
+            createdAt: new \DateTimeImmutable(),
+            rejectionReason: $paymentIntent->cancellation_reason,
+            additional: $paymentIntent->toArray(),
+            gateway: $gateway,
+            gatewayId: $paymentIntent->id,
+        );
+
     }
 
     protected function matchType(string $type): TransactionType
