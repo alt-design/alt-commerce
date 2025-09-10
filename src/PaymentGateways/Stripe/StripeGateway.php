@@ -28,13 +28,7 @@ class StripeGateway implements PaymentGateway
 
     public function processOrder(ProcessOrderRequest $request): Order
     {
-        $paymentIntent = $this->client->paymentIntents->create([
-            'amount' => $request->order->total,
-            'currency' => $request->order->currency,
-            'payment_method' => $request->gatewayPaymentNonce,
-            'confirmation_method' => 'automatic',
-            'confirm' => true,
-        ]);
+        $paymentIntent = $this->client->paymentIntents->capture($request->gatewayPaymentNonce);
 
         $transaction = new Transaction(
             id: Uuid::uuid4(),
@@ -69,11 +63,9 @@ class StripeGateway implements PaymentGateway
         $pi = $this->client->paymentIntents->create([
             'amount' => $this->basketManager->total(),
             'currency' => $this->basketManager->currency(),
+            'capture_method' => 'manual',
             'automatic_payment_methods' => [
                 'enabled' => true,
-            ],
-            'metadata' => [
-                'basket_id' => $this->basketManager->id()
             ],
         ]);
 

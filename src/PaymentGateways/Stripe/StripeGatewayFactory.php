@@ -3,6 +3,7 @@
 namespace AltDesign\AltCommerce\PaymentGateways\Stripe;
 
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketManager;
 use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Contracts\PaymentGatewayFactory;
 use AltDesign\AltCommerce\Contracts\Resolver;
@@ -27,6 +28,7 @@ class StripeGatewayFactory implements PaymentGatewayFactory
         $client = new StripeClient($config['secret_key']);
         return new StripeGateway(
             name: $name,
+            basketManager: $this->resolver->resolve(BasketManager::class),
             client: $client
         );
     }
