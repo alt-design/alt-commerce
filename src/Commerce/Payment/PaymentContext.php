@@ -15,7 +15,7 @@ class PaymentContext
 
     }
 
-    public function authToken(string|null $customerId = null): string
+    public function authToken(string|null $customerId = null)
     {
         return $this->gatewayBroker->currency($this->currency)->gateway()->createPaymentNonceAuthToken(
             new GenerateAuthTokenRequest(customerId: $customerId)

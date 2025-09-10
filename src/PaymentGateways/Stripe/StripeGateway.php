@@ -13,6 +13,7 @@ use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
 use Ramsey\Uuid\Uuid;
+use Stripe\PaymentIntent;
 use Stripe\StripeClient;
 
 class StripeGateway implements PaymentGateway
@@ -58,9 +59,9 @@ class StripeGateway implements PaymentGateway
         return $request->order;
     }
 
-    public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): string
+    public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): PaymentIntent
     {
-        $pi = $this->client->paymentIntents->create([
+        return $this->client->paymentIntents->create([
             'amount' => $this->basketManager->total(),
             'currency' => $this->basketManager->currency(),
             'capture_method' => 'manual',
@@ -68,8 +69,6 @@ class StripeGateway implements PaymentGateway
                 'enabled' => true,
             ],
         ]);
-
-        return $pi->client_secret;
     }
 
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan

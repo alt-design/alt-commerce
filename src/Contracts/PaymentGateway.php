@@ -11,7 +11,7 @@ use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 
 interface PaymentGateway
 {
-    public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): string;
+    public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request);
 
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan;
 
