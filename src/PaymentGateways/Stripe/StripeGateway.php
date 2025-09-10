@@ -2,6 +2,7 @@
 
 namespace AltDesign\AltCommerce\PaymentGateways\Stripe;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketManager;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Order\Order;
 use AltDesign\AltCommerce\Commerce\Payment\GenerateAuthTokenRequest;
@@ -18,6 +19,7 @@ class StripeGateway implements PaymentGateway
 {
     public function __construct(
         protected string $name,
+        protected BasketManager $basketManager,
         protected StripeClient $client
     )
     {
@@ -64,7 +66,18 @@ class StripeGateway implements PaymentGateway
 
     public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): string
     {
-        throw new \Exception('Not implemented');
+        $pi = $this->client->paymentIntents->create([
+            'amount' => $this->basketManager->total(),
+            'currency' => $this->basketManager->currency(),
+            'automatic_payment_methods' => [
+                'enabled' => true,
+            ],
+            'metadata' => [
+                'basket_id' => $this->basketManager->id()
+            ],
+        ]);
+
+        return $pi->client_secret;
     }
 
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan

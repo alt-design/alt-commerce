@@ -6,7 +6,7 @@ namespace AltDesign\AltCommerce\Commerce\Basket;
 /**
  * @method string id()
  * @method int total()
- * @method string $currency()
+ * @method string currency()
  */
 class BasketManager
 {
