@@ -8,6 +8,11 @@ use AltDesign\AltCommerce\Services\PriceCalculatorService\DataTransferObjects\Pr
 class Service
 {
 
+    public function __construct(protected float $defaultTaxRate = 0.2)
+    {
+
+    }
+
     /**
      * @param TaxRule[] $taxRules
      */
@@ -17,10 +22,9 @@ class Service
         bool $amountInclusive,
         string $countryCode,
         array $taxRules,
-        float $defaultTaxRate = 0.2,
     ): PriceCalculationResponse
     {
-        $exclusiveAmount = $amountInclusive ? $amount / ($defaultTaxRate + 1) : $amount;
+        $exclusiveAmount = $amountInclusive ? $amount / ($this->defaultTaxRate + 1) : $amount;
         $taxRule = $this->getApplicableTaxRule($taxRules, $countryCode);
         $taxAmount = $taxRule ? ($exclusiveAmount * $taxRule->rate / 100) : 0;
         $inclusiveAmount = $exclusiveAmount + $taxAmount;

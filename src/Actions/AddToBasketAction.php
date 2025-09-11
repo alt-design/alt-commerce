@@ -81,7 +81,7 @@ class AddToBasketAction
                 amount: $amount,
                 amountInclusive: $this->settings->pricesInclusive(),
                 countryCode: $basket->countryCode,
-                taxRules: $product->taxRules()
+                taxRules: $product->taxRules(),
             );
 
             $basket->lineItems[] = new LineItem(
