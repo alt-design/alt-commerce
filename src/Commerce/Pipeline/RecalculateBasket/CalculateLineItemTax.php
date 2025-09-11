@@ -26,19 +26,15 @@ class CalculateLineItemTax
 
             $response = $this->priceCalculatorService->calculate(
                 currency: $basket->currency,
-                amount: $lineItem->amount,
+                amount: $lineItem->subTotal,
                 amountInclusive: false,
                 countryCode: $basket->countryCode,
                 taxRules: $lineItem->taxRules,
             );
 
-            if (empty($response->taxRate)) {
-                continue;
-            }
-
             $lineItem->taxTotal = $response->taxAmount;
-            $lineItem->taxRate = $response->taxRule->rate;
-            $lineItem->taxName = $response->taxRule->name;
+            $lineItem->taxRate = $response->taxRule?->rate ?? 0;
+            $lineItem->taxName = $response->taxRule?->name;
 
         }
     }
