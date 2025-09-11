@@ -6,20 +6,23 @@ use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
+use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Exceptions\BasketException;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
+use AltDesign\AltCommerce\Services\PriceCalculatorService\Service as PriceCalculationService;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 use Ramsey\Uuid\Uuid;
-
 
 class AddToBasketAction
 {
     use InteractWithBasket;
 
     public function __construct(
-        protected BasketContext $context,
-        protected ProductRepository $productRepository
+        protected BasketContext           $context,
+        protected ProductRepository       $productRepository,
+        protected PriceCalculationService $priceCalculationService,
+        protected Settings $settings,
     )
     {
 
@@ -70,12 +73,22 @@ class AddToBasketAction
             );
 
         } else {
+            
+            $amount = $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
+
+            $priceResponse = $this->priceCalculationService->calculate(
+                currency: $basket->currency,
+                amount: $amount,
+                amountInclusive: $this->settings->pricesInclusive(),
+                countryCode: $basket->countryCode,
+                taxRules: $product->taxRules()
+            );
 
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),
                 productName: $product->name(),
-                amount: $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]),
+                amount: $priceResponse->exclusiveAmount,
                 quantity: $quantity,
                 taxable: $product->taxable(),
                 taxRules: $product->taxRules(),

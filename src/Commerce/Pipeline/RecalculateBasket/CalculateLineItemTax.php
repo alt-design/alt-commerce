@@ -3,10 +3,18 @@
 namespace AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
+use AltDesign\AltCommerce\Services\PriceCalculatorService\Service;
 
 class CalculateLineItemTax
 {
     public static array $skip = [];
+
+    public function __construct(
+        protected Service $priceCalculatorService,
+    )
+    {
+
+    }
 
     public function handle(Basket $basket): void
     {
@@ -16,25 +24,21 @@ class CalculateLineItemTax
                 continue;
             }
 
-            $taxRules = [];
-            foreach ($lineItem->taxRules as $taxRule) {
-                if (!empty($taxRule->countryFilter) && !in_array($basket->countryCode, $taxRule->countryFilter)) {
-                    continue;
-                }
-                $taxRules[] = $taxRule;
-            }
+            $response = $this->priceCalculatorService->calculate(
+                currency: $basket->currency,
+                amount: $lineItem->amount,
+                amountInclusive: false,
+                countryCode: $basket->countryCode,
+                taxRules: $lineItem->taxRules,
+            );
 
-            if (empty($taxRules)) {
+            if (empty($response->taxRate)) {
                 continue;
             }
 
-
-            // For now only support first tax rule... Can't think of any scenario where we would need 2 tax rules.
-            // We rely on the repository to order tax rules by priority.
-            $taxRule = $taxRules[0];
-            $lineItem->taxTotal = ($lineItem->subTotal - $lineItem->discountTotal) * $taxRule->rate / 100;
-            $lineItem->taxRate = $taxRule->rate;
-            $lineItem->taxName = $taxRule->name;
+            $lineItem->taxTotal = $response->taxAmount;
+            $lineItem->taxRate = $response->taxRule->rate;
+            $lineItem->taxName = $response->taxRule->name;
 
         }
     }

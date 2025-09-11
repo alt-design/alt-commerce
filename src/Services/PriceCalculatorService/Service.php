@@ -29,6 +29,7 @@ class Service
             inclusiveAmount: $inclusiveAmount,
             taxAmount: $taxAmount,
             taxApplied: !!$taxRule,
+            taxRule: $taxRule,
         );
     }
 
