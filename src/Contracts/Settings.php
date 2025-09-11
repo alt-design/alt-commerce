@@ -18,5 +18,9 @@ interface Settings
      */
     public function supportedCurrencies(): array;
 
+    public function pricesInclusive(): bool;
+
+    public function defaultTaxRate(): float;
+
 
 }
