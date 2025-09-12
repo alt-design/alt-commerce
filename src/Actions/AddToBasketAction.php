@@ -84,6 +84,7 @@ class AddToBasketAction
                 taxRules: $product->taxRules(),
             );
 
+
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),

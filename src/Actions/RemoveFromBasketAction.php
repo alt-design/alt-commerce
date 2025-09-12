@@ -13,18 +13,18 @@ class RemoveFromBasketAction
 
     }
 
-    public function handle(string ...$productIds): void
+    public function handle(string ...$lineItemIds): void
     {
         $basket = $this->context->current();
-        foreach ($productIds as $productId) {
+        foreach ($lineItemIds as $lineItemId) {
             foreach ($basket->lineItems as $key => $item) {
-                if ($item->productId === $productId ) {
+                if ($item->id === $lineItemId) {
                     unset($basket->lineItems[$key]);
                 }
             }
 
             foreach ($basket->billingItems as $key => $item) {
-                if ($item->productId === $productId) {
+                if ($item->id === $lineItemId) {
                     unset($basket->billingItems[$key]);
                 }
             }
