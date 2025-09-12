@@ -27,7 +27,7 @@ class CalculateLineItemTax
             $response = $this->priceCalculatorService->calculate(
                 currency: $basket->currency,
                 amount: $lineItem->subTotal,
-                amountInclusive: $lineItem->amountInclusive,
+                amountInclusive: false,
                 countryCode: $basket->countryCode,
                 taxRules: $lineItem->taxRules,
             );

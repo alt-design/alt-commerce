@@ -18,7 +18,6 @@ class LineItem
         public string $productId,
         public string $productName,
         public int    $amount,
-        public bool   $amountInclusive,
         public int    $quantity = 1,
         public bool   $taxable = false,
         public array  $taxRules = [],

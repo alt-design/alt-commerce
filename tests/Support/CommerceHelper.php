@@ -76,7 +76,6 @@ trait CommerceHelper
             productId: $product->id(),
             productName: $product->name(),
             amount: $product->price()->getAmount($this->basket->currency, ['quantity' => $quantity]),
-            amountInclusive: false,
             quantity: $quantity,
             taxable: $product->taxable(),
             taxRules: $product->taxRules(),
