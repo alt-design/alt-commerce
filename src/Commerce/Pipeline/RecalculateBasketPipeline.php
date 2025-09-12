@@ -4,7 +4,6 @@ namespace AltDesign\AltCommerce\Commerce\Pipeline;
 
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemSubtotals;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemTax;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCouponsDiscounts;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
@@ -23,7 +22,6 @@ class RecalculateBasketPipeline
         protected ValidateCoupons                  $validateCoupons,
         protected CalculateLineItemSubtotals       $calculateLineItemSubtotals,
         protected CalculateProductCouponsDiscounts $calculateProductCouponDiscounts,
-        protected CalculateLineItemTax             $calculateLineItemTax,
         protected CalculateTaxItems                $calculateTaxItems,
         protected CalculateTotals                  $calculateTotals,
     )

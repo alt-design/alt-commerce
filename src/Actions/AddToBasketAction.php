@@ -84,7 +84,6 @@ class AddToBasketAction
                 taxRules: $product->taxRules(),
             );
 
-
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),
@@ -95,6 +94,9 @@ class AddToBasketAction
                 taxRules: $product->taxRules(),
                 options: $options,
                 productData: $product->data(),
+                taxTotal: $priceResponse->taxAmount,
+                taxRate: $priceResponse->taxRule?->rate ?? 0,
+                taxName: $priceResponse->taxRule?->name,
             );
         }
     }

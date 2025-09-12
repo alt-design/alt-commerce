@@ -5,7 +5,6 @@ namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Pipeline;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
 use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemSubtotals;
-use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateLineItemTax;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateProductCouponsDiscounts;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTaxItems;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasket\CalculateTotals;
@@ -71,7 +70,6 @@ class RecalculateBasketPipelineTest extends TestCase
             ),
             calculateLineItemSubtotals: new CalculateLineItemSubtotals(),
             calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
-            calculateLineItemTax: new CalculateLineItemTax(),
             calculateTaxItems: new CalculateTaxItems(),
             calculateTotals: new CalculateTotals(),
         );
