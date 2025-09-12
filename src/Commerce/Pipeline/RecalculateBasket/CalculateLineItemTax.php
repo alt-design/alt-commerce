@@ -26,13 +26,13 @@ class CalculateLineItemTax
 
             $response = $this->priceCalculatorService->calculate(
                 currency: $basket->currency,
-                amount: $lineItem->subTotal,
+                amount: $lineItem->amount,
                 amountInclusive: false,
                 countryCode: $basket->countryCode,
                 taxRules: $lineItem->taxRules,
             );
 
-            $lineItem->taxTotal = $response->taxAmount;
+            $lineItem->taxTotal = $response->taxAmount * $lineItem->quantity;
             $lineItem->taxRate = $response->taxRule?->rate ?? 0;
             $lineItem->taxName = $response->taxRule?->name;
 
