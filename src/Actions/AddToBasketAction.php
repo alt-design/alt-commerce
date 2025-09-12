@@ -36,7 +36,7 @@ class AddToBasketAction
 
         $basket = $this->context->current();
 
-        $existing = $this->find($basket, $productId);
+        $existing = $this->find($basket, $productId, $options);
 
         if ($existing instanceof BillingItem) {
             throw new BasketException('Billing item is already in basket');

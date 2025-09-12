@@ -8,10 +8,13 @@ use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 
 trait InteractWithBasket
 {
-    protected function find(Basket $basket, string $productId): LineItem|BillingItem|null
+    protected function find(Basket $basket, string $productId, array $options = []): LineItem|BillingItem|null
     {
+        ksort($options);
+
         foreach ($basket->lineItems as $item) {
-            if ($item->productId === $productId) {
+            ksort($item->options);
+            if ($item->productId === $productId && $item->options == $options) {
                 return $item;
             }
         }
