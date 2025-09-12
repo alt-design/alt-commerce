@@ -21,7 +21,6 @@ class AddToBasketAction
     public function __construct(
         protected BasketContext           $context,
         protected ProductRepository       $productRepository,
-        protected PriceCalculationService $priceCalculationService,
         protected Settings $settings,
     )
     {
@@ -76,27 +75,17 @@ class AddToBasketAction
             
             $amount = $price !== null ? $price : $product->price()->getAmount($basket->currency, ['quantity' => $quantity]);
 
-            $priceResponse = $this->priceCalculationService->calculate(
-                currency: $basket->currency,
-                amount: $amount,
-                amountInclusive: $this->settings->pricesInclusive(),
-                countryCode: $basket->countryCode,
-                taxRules: $product->taxRules(),
-            );
-
             $basket->lineItems[] = new LineItem(
                 id: Uuid::uuid4(),
                 productId: $product->id(),
                 productName: $product->name(),
-                amount: $priceResponse->exclusiveAmount,
+                amount: $amount,
+                amountInclusive: $this->settings->pricesInclusive(),
                 quantity: $quantity,
                 taxable: $product->taxable(),
                 taxRules: $product->taxRules(),
                 options: $options,
                 productData: $product->data(),
-                taxTotal: $priceResponse->taxAmount,
-                taxRate: $priceResponse->taxRule?->rate ?? 0,
-                taxName: $priceResponse->taxRule?->name,
             );
         }
     }

@@ -29,6 +29,14 @@ class Service
         $taxAmount = $taxRule ? ($exclusiveAmount * $taxRule->rate / 100) : 0;
         $inclusiveAmount = $exclusiveAmount + $taxAmount;
 
+        // when supplying pricing in inclusive amounts, we could get rounding errors once we convert the floats to int
+        // this check corrects for that.
+        // e.g. £25 inclusive at 20% tax
+        if ($amountInclusive) {
+            $diff = $inclusiveAmount - ((int)$exclusiveAmount + (int)$taxAmount);
+            $exclusiveAmount = (int)$exclusiveAmount + $diff;
+        }
+
         return new PriceCalculationResponse(
             currency: $currency,
             exclusiveAmount: $exclusiveAmount,
