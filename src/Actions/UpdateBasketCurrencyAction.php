@@ -2,16 +2,20 @@
 
 namespace AltDesign\AltCommerce\Actions;
 
+use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
+use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
+use AltDesign\AltCommerce\Services\PriceCalculatorService\Service;
 
 class UpdateBasketCurrencyAction
 {
     public function __construct(
         protected BasketContext $context,
         protected ProductRepository $productRepository,
+        protected Service $priceCalculatorService,
         protected Settings $settings,
     )
     {
@@ -36,7 +40,17 @@ class UpdateBasketCurrencyAction
         foreach ($basket->lineItems as $key => $item) {
             $product = $this->productRepository->find($item->productId);
             if ($product && $product->price()->isCurrencySupported($currency)) {
-                $basket->lineItems[$key]->amount = $product->price()->getAmount($currency, ['quantity' => $item->quantity]);
+
+                $amount = $product->price()->getAmount($currency, ['quantity' => $item->quantity]);
+                $response = $this->priceCalculatorService->calculate(
+                    currency: $basket->currency,
+                    amount: $amount,
+                    amountInclusive: $this->settings->pricesInclusive(),
+                    countryCode: $basket->countryCode,
+                    taxRules: $product->taxRules(),
+                );
+
+                $basket->lineItems[$key]->amount = $response->exclusiveAmount;
                 continue;
             }
 
@@ -58,6 +72,6 @@ class UpdateBasketCurrencyAction
         }
 
         $basket->currency = $currency;
-
     }
+
 }
