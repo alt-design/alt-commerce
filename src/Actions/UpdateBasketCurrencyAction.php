@@ -36,7 +36,7 @@ class UpdateBasketCurrencyAction
         foreach ($basket->lineItems as $key => $item) {
             $product = $this->productRepository->find($item->productId);
             if ($product && $product->price()->isCurrencySupported($currency)) {
-                $basket->lineItems[$key]->subTotal = $product->price()->getAmount($currency, ['quantity' => $item->quantity]);
+                $basket->lineItems[$key]->amount = $product->price()->getAmount($currency, ['quantity' => $item->quantity]);
                 continue;
             }
 
