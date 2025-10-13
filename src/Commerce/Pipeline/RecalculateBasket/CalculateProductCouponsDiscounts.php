@@ -54,7 +54,7 @@ class CalculateProductCouponsDiscounts
                 id: Uuid::uuid4()->toString(),
                 discountItemId: $discountItem->id,
                 name: $coupon->name(),
-                amount: $discountTotal,
+                amount: $discountTotal * ($item->subTotal / $basket->subTotal),
             );
 
             $item->discountTotal += array_sum(array_column($item->discounts, 'amount'));
