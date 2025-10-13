@@ -18,6 +18,13 @@ use Stripe\StripeClient;
 
 class StripeGateway implements PaymentGateway
 {
+
+    const ZERO_DECIMAL_CURRENCIES = [
+        'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF',
+        'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND',
+        'VUV', 'XAF', 'XOF', 'XPF'
+    ];
+
     public function __construct(
         protected string $name,
         protected BasketManager $basketManager,
@@ -62,7 +69,7 @@ class StripeGateway implements PaymentGateway
     public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): PaymentIntent
     {
         return $this->client->paymentIntents->create([
-            'amount' => $this->basketManager->total(),
+            'amount' => $this->amount(),
             'currency' => $this->basketManager->currency(),
             'capture_method' => 'manual',
             'automatic_payment_methods' => [
@@ -74,5 +81,13 @@ class StripeGateway implements PaymentGateway
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan
     {
         throw new \Exception('Not implemented');
+    }
+
+    protected function amount(): int
+    {
+        if (in_array($this->basketManager->currency(), self::ZERO_DECIMAL_CURRENCIES)) {
+            return $this->basketManager->total() / 100;
+        }
+        return $this->basketManager->total();
     }
 }
