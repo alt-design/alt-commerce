@@ -38,6 +38,10 @@ class StripeGateway implements PaymentGateway
     {
         $paymentIntent = $this->client->paymentIntents->capture($request->gatewayPaymentNonce);
 
+        $transactionAmount = in_array($paymentIntent->currency, self::ZERO_DECIMAL_CURRENCIES) ?
+            $paymentIntent->amount * 100 :
+            $paymentIntent->amount;
+
         $transaction = new Transaction(
             id: Uuid::uuid4(),
             type: TransactionType::SALE,
@@ -51,7 +55,7 @@ class StripeGateway implements PaymentGateway
                 'succeeded' => TransactionStatus::SETTLED,
             },
             currency: $paymentIntent->currency,
-            amount: $paymentIntent->amount,
+            amount: $transactionAmount,
             createdAt: new \DateTimeImmutable(),
             rejectionReason: $paymentIntent->cancellation_reason,
             additional: $paymentIntent->toArray(),
