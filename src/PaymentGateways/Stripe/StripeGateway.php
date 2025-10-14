@@ -76,6 +76,7 @@ class StripeGateway implements PaymentGateway
             'amount' => $this->amount(),
             'currency' => $this->basketManager->currency(),
             'capture_method' => 'manual',
+            'description' => $request->description,
             'automatic_payment_methods' => [
                 'enabled' => true,
             ],

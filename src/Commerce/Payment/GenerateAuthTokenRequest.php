@@ -7,6 +7,7 @@ class GenerateAuthTokenRequest
 {
     public function __construct(
         public string|null $customerId = null,
+        public string|null $description = null,
     ) {
 
     }
