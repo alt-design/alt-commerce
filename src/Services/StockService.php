@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Services;
 
-use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\StockRepository;
@@ -45,6 +44,17 @@ class StockService
         };
     }
 
+    /**
+     * purchasableQuantity() resolved from a product id. null when the product
+     * can't be found or is unlimited.
+     */
+    public function purchasableQuantityForId(string $productId): ?int
+    {
+        $product = $this->productRepository->find($productId);
+
+        return $product ? $this->purchasableQuantity($product) : null;
+    }
+
     public function isPurchasable(Product $product, int $quantity = 1): bool
     {
         $limit = $this->purchasableQuantity($product);
@@ -70,53 +80,5 @@ class StockService
     {
         return $product->stockPolicy() === StockPolicy::BACKORDER
             && ($this->level($product) ?? 0) <= 0;
-    }
-
-    /**
-     * Reduce or drop basket lines that exceed available stock, returning the
-     * changes so the caller can message the customer. The basket is mutated in
-     * place; persisting it is the caller's responsibility.
-     *
-     * @return array<int, array{product_id: string, name: string, from: int, to: int, removed: bool}>
-     */
-    public function reconcileBasket(Basket $basket): array
-    {
-        $changes = [];
-        $kept = [];
-
-        foreach ($basket->lineItems as $lineItem) {
-            $product = $this->productRepository->find($lineItem->productId);
-
-            if (! $product) {
-                $kept[] = $lineItem;
-
-                continue;
-            }
-
-            $allowed = $this->clamp($product, $lineItem->quantity);
-
-            if ($allowed >= $lineItem->quantity) {
-                $kept[] = $lineItem;
-
-                continue;
-            }
-
-            $changes[] = [
-                'product_id' => $lineItem->productId,
-                'name' => $lineItem->productName,
-                'from' => $lineItem->quantity,
-                'to' => $allowed,
-                'removed' => $allowed <= 0,
-            ];
-
-            if ($allowed > 0) {
-                $lineItem->quantity = $allowed;
-                $kept[] = $lineItem;
-            }
-        }
-
-        $basket->lineItems = $kept;
-
-        return $changes;
     }
 }
