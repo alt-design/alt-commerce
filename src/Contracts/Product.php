@@ -3,7 +3,7 @@
 namespace AltDesign\AltCommerce\Contracts;
 
 use AltDesign\AltCommerce\Commerce\Tax\TaxRule;
-use AltDesign\AltCommerce\Support\PriceCollection;
+use AltDesign\AltCommerce\Enum\StockPolicy;
 
 interface Product
 {
@@ -15,6 +15,8 @@ interface Product
 
     public function taxable(): bool;
 
+    public function stockPolicy(): StockPolicy;
+
     /**
      * @return TaxRule[]
      */
@@ -24,6 +26,4 @@ interface Product
      * @return array<mixed>
      */
     public function data(): array;
-
-
 }
