@@ -31,7 +31,7 @@ class AddToBasketAction
     /**
      * @param array<string, string> $options
      */
-    public function handle(string $productId, int $quantity = 1, int $price = null, array $options = []): void
+    public function handle(string $productId, int $quantity = 1, ?int $price = null, array $options = []): void
     {
 
         $basket = $this->context->current();
