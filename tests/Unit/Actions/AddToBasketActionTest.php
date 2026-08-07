@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\AddToBasketAction;
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
@@ -12,6 +11,7 @@ use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Enum\DurationUnit;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
 use AltDesign\AltCommerce\Exceptions\ProductNotFoundException;
+use AltDesign\AltCommerce\Services\PriceCalculatorService\Service;
 use AltDesign\AltCommerce\Support\Duration;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
@@ -25,10 +25,12 @@ class AddToBasketActionTest extends TestCase
 
     protected $product;
     protected $productRepository;
+    protected $action;
 
     public function setUp(): void
     {
         $this->createBasket(currency: 'USD');
+        $this->createSettings();
 
         $this->product = $this->createProduct(
             id: 'product-id',
@@ -42,15 +44,17 @@ class AddToBasketActionTest extends TestCase
         $this->productRepository = Mockery::mock(ProductRepository::class);
         $this->productRepository->allows()->find('product-id')->andReturn($this->product);
 
+        $this->action = new AddToBasketAction(
+            context: $this->basketContext,
+            productRepository: $this->productRepository,
+            settings: $this->settings,
+            priceCalculatorService: new Service(),
+        );
     }
 
     public function test_adds_product_to_basket()
     {
-        $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
-        $recalculateBasketActionMock->allows('handle')->once();
-
-        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, $recalculateBasketActionMock);
-        $action->handle(
+        $this->action->handle(
             productId: 'product-id',
             quantity: 2,
             options: ['color' => 'red']
@@ -67,12 +71,10 @@ class AddToBasketActionTest extends TestCase
 
     public function test_updates_existing_product_quantity()
     {
-        $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
-        $recalculateBasketActionMock->allows('handle')->twice();
+        $this->basketContext->expects('recalculateBasket')->once();
 
-        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, $recalculateBasketActionMock);
-        $action->handle(productId: 'product-id', quantity:  2);
-        $action->handle(productId: 'product-id', quantity: 3);
+        $this->action->handle(productId: 'product-id', quantity:  2);
+        $this->action->handle(productId: 'product-id', quantity: 3);
 
         $this->assertCount(1, $this->basket->lineItems);
         $this->assertEquals('product-id', $this->basket->lineItems[0]->productId);
@@ -85,8 +87,7 @@ class AddToBasketActionTest extends TestCase
 
         $this->productRepository->allows()->find('invalid-product-id')->andReturn(null);
 
-        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, Mockery::mock(RecalculateBasketAction::class));
-        $action->handle(productId: 'invalid-product-id', quantity: 2);
+        $this->action->handle(productId: 'invalid-product-id', quantity: 2);
     }
 
     public function test_throws_exception_if_product_does_not_have_supported_currency()
@@ -94,8 +95,7 @@ class AddToBasketActionTest extends TestCase
         $this->expectException(CurrencyNotSupportedException::class);
         $this->basket->currency = 'GBP';
 
-        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, Mockery::mock(RecalculateBasketAction::class));
-        $action->handle(productId: 'product-id', quantity: 1);
+        $this->action->handle(productId: 'product-id', quantity: 1);
     }
 
     public function test_adds_product_with_recurrent_billing()
@@ -120,11 +120,7 @@ class AddToBasketActionTest extends TestCase
 
         $this->productRepository->allows()->find('product-recurrent-billing')->andReturn($this->product);
 
-        $recalculateBasketActionMock = Mockery::mock(RecalculateBasketAction::class);
-        $recalculateBasketActionMock->allows('handle');
-
-        $action = new AddToBasketAction($this->basketRepository, $this->productRepository, $recalculateBasketActionMock);
-        $action->handle(productId: 'product-recurrent-billing', quantity: 1, options: ['plan' => '1-month']);
+        $this->action->handle(productId: 'product-recurrent-billing', quantity: 1, options: ['plan' => '1-month']);
 
         $this->assertCount(0, $this->basket->lineItems);
         $this->assertCount(1, $this->basket->billingItems);

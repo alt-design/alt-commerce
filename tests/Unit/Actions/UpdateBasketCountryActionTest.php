@@ -22,7 +22,7 @@ class UpdateBasketCountryActionTest extends TestCase
     {
         $this->createBasket(countryCode: 'GB');
         $this->action = new UpdateBasketCountryAction(
-            basketRepository: $this->basketRepository,
+            context: $this->basketContext,
         );
     }
 

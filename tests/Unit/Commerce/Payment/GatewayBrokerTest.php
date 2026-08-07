@@ -5,6 +5,7 @@ namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Payment;
 use AltDesign\AltCommerce\Commerce\Billing\SubscriptionFactory;
 use AltDesign\AltCommerce\Commerce\Payment\GatewayBroker;
 use AltDesign\AltCommerce\Commerce\Payment\TransactionFactory;
+use AltDesign\AltCommerce\Contracts\CustomerRepository;
 use AltDesign\AltCommerce\Contracts\Resolver;
 use AltDesign\AltCommerce\Contracts\Settings;
 use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
@@ -21,6 +22,7 @@ class GatewayBrokerTest extends TestCase
         $this->resolver->allows('resolve')->with(TransactionFactory::class)->andReturn(new TransactionFactory());
         $this->resolver->allows('resolve')->with(SubscriptionFactory::class)->andReturn(new SubscriptionFactory());
         $this->resolver->allows('resolve')->with(Settings::class)->andReturn($this->settings);
+        $this->resolver->allows('resolve')->with(CustomerRepository::class)->andReturn(\Mockery::mock(CustomerRepository::class));
     }
 
     public function test_from_config(): void

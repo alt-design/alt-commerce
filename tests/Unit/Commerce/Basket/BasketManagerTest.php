@@ -2,6 +2,8 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\Commerce\Basket;
 
+use AltDesign\AltCommerce\Commerce\Basket\BasketBroker;
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\BasketManager;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
@@ -12,6 +14,7 @@ use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
+use Mockery;
 
 
 class BasketManagerTest extends TestCase
@@ -24,7 +27,20 @@ class BasketManagerTest extends TestCase
     {
         $this->createBasket();
 
-        $this->basketManager = new BasketManager($this->basketRepository);
+        // A real BasketContext (over a driver mock) so the delegated find() runs
+        // against the basket rather than a stub.
+        $driver = Mockery::mock(\AltDesign\AltCommerce\Contracts\BasketDriver::class);
+        $driver->allows()->get()->andReturn($this->basket);
+        $context = new BasketContext(
+            resolver: Mockery::mock(\AltDesign\AltCommerce\Contracts\Resolver::class),
+            driver: $driver,
+            context: 'default',
+        );
+
+        $broker = Mockery::mock(BasketBroker::class);
+        $broker->allows()->context('default')->andReturn($context);
+
+        $this->basketManager = new BasketManager($broker);
     }
 
     public function test_find(): void
