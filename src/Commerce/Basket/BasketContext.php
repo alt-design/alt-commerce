@@ -8,9 +8,11 @@ use AltDesign\AltCommerce\Contracts\Resolver;
 use AltDesign\AltCommerce\Traits\InteractWithBasket;
 
 /**
- * @method int addToBasket(string $productId, int $quantity = 1, int $price = null, array $options = [])
+ * @method int addToBasket(string $productId, int $quantity = 1, ?int $price = null, array $options = [])
  * @method void updateBasketCountry(string $countryCode)
  * @method void updateBasketCurrency(string $currency)
+ * @method void updateBasketQuantity(string $productId, int $quantity)
+ * @method void removeFromBasket(string ...$lineItemIds)
  * @method void applyManualDiscount(string $amount, string $description)
  * @method void recalculateBasket()
  * @method LineItem[] lineItems()

@@ -12,6 +12,7 @@ use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
+use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
 use Ramsey\Uuid\Uuid;
 use Stripe\PaymentIntent;
 use Stripe\StripeClient;
@@ -53,6 +54,7 @@ class StripeGateway implements PaymentGateway
                 'requires_capture' => TransactionStatus::PENDING,
                 'canceled' => TransactionStatus::FAILED,
                 'succeeded' => TransactionStatus::SETTLED,
+                default => throw new PaymentGatewayException("Unexpected Stripe payment intent status: {$paymentIntent->status}"),
             },
             currency: $paymentIntent->currency,
             amount: $transactionAmount,

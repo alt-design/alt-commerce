@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveFromBasketAction;
 use AltDesign\AltCommerce\Commerce\Billing\BillingPlan;
 use AltDesign\AltCommerce\Commerce\Billing\RecurrentBillingSchema;
@@ -20,18 +19,14 @@ class RemoveFromBasketActionTest extends TestCase
 
     use CommerceHelper;
 
-    protected $recalculateBasketAction;
     protected $action;
 
     protected function setUp(): void
     {
         $this->createBasket();
 
-        $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
-
         $this->action = new RemoveFromBasketAction(
-            basketRepository: $this->basketRepository,
-            recalculateBasketAction: $this->recalculateBasketAction
+            context: $this->basketContext,
         );
     }
 
@@ -64,13 +59,10 @@ class RemoveFromBasketActionTest extends TestCase
             )
         );
 
-        $this->addLineItemToBasket($product1, 2);
-        $this->addBillingItemToBasket($product2, '1-month');
+        $lineItem = $this->addLineItemToBasket($product1, 2);
+        $billingItem = $this->addBillingItemToBasket($product2, '1-month');
 
-        $this->recalculateBasketAction->allows('handle')->once();
-        $this->basketRepository->allows('save')->once();
-
-        $this->action->handle('product-1', 'product-2');
+        $this->action->handle($lineItem->id, $billingItem->id);
 
         $this->assertEmpty($this->basket->lineItems);
         $this->assertEmpty($this->basket->billingItems);

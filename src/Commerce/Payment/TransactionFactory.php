@@ -48,6 +48,7 @@ class TransactionFactory
                 'requires_capture' => TransactionStatus::PENDING,
                 'canceled' => TransactionStatus::FAILED,
                 'succeeded' => TransactionStatus::SETTLED,
+                default => throw new PaymentGatewayException("Unexpected Stripe payment intent status: {$paymentIntent->status}"),
             },
             currency: $paymentIntent->currency,
             amount: $paymentIntent->amount,

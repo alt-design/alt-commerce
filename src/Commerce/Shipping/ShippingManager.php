@@ -1,6 +1,7 @@
 <?php
 
 namespace AltDesign\AltCommerce\Commerce\Shipping;
+use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Contracts\ShippingMethodRepository;
 use AltDesign\AltCommerce\RuleEngine\RuleManager;
@@ -10,6 +11,7 @@ class ShippingManager
 {
     public function __construct(
         protected ShippingMethodRepository $shippingMethodRepository,
+        protected BasketContext $context,
         protected RuleManager $ruleManager,
     )
     {
@@ -25,7 +27,7 @@ class ShippingManager
 
         $methods = $this->shippingMethodRepository->get();
 
-        $basket = $this->basketRepository->get();
+        $basket = $this->context->current();
 
         $rates = [];
 

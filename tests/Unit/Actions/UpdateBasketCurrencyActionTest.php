@@ -2,11 +2,11 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\UpdateBasketCurrencyAction;
 use AltDesign\AltCommerce\Commerce\Pricing\FixedPriceSchema;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Exceptions\CurrencyNotSupportedException;
+use AltDesign\AltCommerce\Services\PriceCalculatorService\Service;
 use AltDesign\AltCommerce\Support\Money;
 use AltDesign\AltCommerce\Support\PriceCollection;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
@@ -18,7 +18,6 @@ class UpdateBasketCurrencyActionTest extends TestCase
     use CommerceHelper;
 
     protected $productRepository;
-    protected $recalculateBasketAction;
     protected $action;
     protected $product1;
 
@@ -26,8 +25,6 @@ class UpdateBasketCurrencyActionTest extends TestCase
     {
         $this->createBasket();
         $this->createSettings(supportedCurrencies: ['GBP','USD','EUR']);
-
-        $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
 
         $this->product1 = $this->createProduct(
             id: 'product-1',
@@ -56,23 +53,21 @@ class UpdateBasketCurrencyActionTest extends TestCase
         $this->productRepository->allows()->find('product-2')->andReturn($this->product2);
 
         $this->action = new UpdateBasketCurrencyAction(
-            basketRepository: $this->basketRepository,
+            context: $this->basketContext,
             productRepository: $this->productRepository,
-            recalculateBasketAction: $this->recalculateBasketAction,
+            priceCalculatorService: new Service(),
             settings: $this->settings
         );
     }
 
     public function test_updating_currency_changes_basket_currency(): void
     {
-        $this->recalculateBasketAction->allows()->handle()->once();
         $this->action->handle('USD');
         $this->assertEquals('USD', $this->basket->currency);
     }
 
     public function test_items_get_removed_if_price_is_not_available(): void
     {
-        $this->recalculateBasketAction->allows()->handle()->once();
         $lineItem1 = $this->addLineItemToBasket($this->product1, 1);
         $this->addLineItemToBasket($this->product2, 1);
 

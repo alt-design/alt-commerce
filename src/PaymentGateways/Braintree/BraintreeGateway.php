@@ -111,7 +111,6 @@ class BraintreeGateway implements PaymentGateway
             $params['customerId'] = $this->saveCustomer($request->customerId);
         }
 
-        // @phpstan-ignore-next-line
         return $this->client->request(fn(Gateway $gateway) => $gateway->clientToken()->generate($params));
     }
 

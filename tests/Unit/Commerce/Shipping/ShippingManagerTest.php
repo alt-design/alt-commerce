@@ -32,7 +32,7 @@ class ShippingManagerTest extends TestCase
 
         $this->shippingManager = new ShippingManager(
             shippingMethodRepository: $this->shippingMethodRepository,
-            basketRepository: $this->basketRepository,
+            context: $this->basketContext,
             ruleManager: new RuleManager(),
         );
     }

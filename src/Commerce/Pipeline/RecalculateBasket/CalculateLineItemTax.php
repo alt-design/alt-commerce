@@ -33,7 +33,7 @@ class CalculateLineItemTax
             );
 
             $lineItem->taxTotal = $response->taxAmount * $lineItem->quantity;
-            $lineItem->taxRate = $response->taxRule?->rate ?? 0;
+            $lineItem->taxRate = $response->taxRule ? $response->taxRule->rate : 0;
             $lineItem->taxName = $response->taxRule?->name;
 
         }

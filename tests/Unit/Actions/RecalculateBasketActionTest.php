@@ -4,7 +4,6 @@ namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Pipeline\RecalculateBasketPipeline;
-use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 use Mockery;
@@ -21,10 +20,10 @@ class RecalculateBasketActionTest extends TestCase
         $pipeline = Mockery::mock(RecalculateBasketPipeline::class);
         $pipeline->expects('handle')->once();
 
-        $this->basketRepository->allows()->save($this->basket);
+        $this->basketContext->expects()->save($this->basket)->once();
 
         $action = new RecalculateBasketAction(
-            basketRepository: $this->basketRepository,
+            context: $this->basketContext,
             recalculateBasketPipeline: $pipeline
         );
 
@@ -32,7 +31,5 @@ class RecalculateBasketActionTest extends TestCase
 
         $this->assertTrue(true);
     }
-
-
 
 }

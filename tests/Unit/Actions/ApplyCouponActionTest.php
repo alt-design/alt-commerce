@@ -3,7 +3,6 @@
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
 use AltDesign\AltCommerce\Actions\ApplyCouponAction;
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCouponPipeline;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\CouponRepository;
@@ -19,7 +18,6 @@ class ApplyCouponActionTest extends TestCase
 
     protected $coupon;
     protected $couponRepository;
-    protected $recalculateBasketAction;
     protected $couponValidator;
     protected $validateCouponPipeline;
     protected $action;
@@ -33,14 +31,11 @@ class ApplyCouponActionTest extends TestCase
 
         $this->couponRepository = Mockery::mock(CouponRepository::class);
 
-        $this->recalculateBasketAction= Mockery::mock(RecalculateBasketAction::class);
-
         $this->validateCouponPipeline = Mockery::mock(ValidateCouponPipeline::class);
 
         $this->action = new ApplyCouponAction(
-            basketRepository: $this->basketRepository,
+            context: $this->basketContext,
             couponRepository: $this->couponRepository,
-            recalculateBasketAction: $this->recalculateBasketAction,
             validateCouponPipeline: $this->validateCouponPipeline,
         );
     }
@@ -49,7 +44,6 @@ class ApplyCouponActionTest extends TestCase
     public function test_applying_valid_coupon(): void
     {
         $this->couponRepository->shouldReceive('find')->with('GBP', 'SAVE20')->once()->andReturn($this->coupon);
-        $this->recalculateBasketAction->shouldReceive('handle')->once();
         $this->validateCouponPipeline->allows('handle');
 
 

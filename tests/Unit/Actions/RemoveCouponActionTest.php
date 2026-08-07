@@ -2,7 +2,6 @@
 
 namespace AltDesign\AltCommerce\Tests\Unit\Actions;
 
-use AltDesign\AltCommerce\Actions\RecalculateBasketAction;
 use AltDesign\AltCommerce\Actions\RemoveCouponAction;
 use AltDesign\AltCommerce\Commerce\Basket\DiscountItem;
 use AltDesign\AltCommerce\Commerce\Basket\CouponItem;
@@ -18,18 +17,14 @@ class RemoveCouponActionTest extends TestCase
 {
     use CommerceHelper;
 
-    protected $recalculateBasketAction;
     protected $action;
 
     protected function setUp(): void
     {
         $this->createBasket();
 
-        $this->recalculateBasketAction = Mockery::mock(RecalculateBasketAction::class);
-
         $this->action = new RemoveCouponAction(
-            basketRepository: $this->basketRepository,
-            recalculateBasketAction: $this->recalculateBasketAction
+            context: $this->basketContext,
         );
     }
 
@@ -57,9 +52,6 @@ class RemoveCouponActionTest extends TestCase
                 couponCode: $coupon->code(),
             )
         ];
-
-        $this->recalculateBasketAction->allows('handle')->once();
-        $this->basketRepository->allows('save')->once();
 
         $removedCoupon = $this->action->handle('coupon-code');
 
