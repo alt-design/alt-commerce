@@ -9,16 +9,16 @@ jobs:
       - uses: actions/checkout@v3
       - uses: php-actions/composer@v6
         with:
-          php_version: 8.3
+          php_version: 8.4
 
       - uses: php-actions/phpunit@v3
         with:
-          php_version: 8.3
+          php_version: 8.4
           configuration: phpunit.xml
           test_suffix: 'Test'
 
       - uses: php-actions/phpstan@v3
         with:
-          php_version: 8.3
+          php_version: 8.4
           configuration: phpstan.neon
           memory_limit: 512m
