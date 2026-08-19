@@ -74,7 +74,7 @@ class StripeGateway implements PaymentGateway
 
     public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): PaymentIntent
     {
-        return $this->client->paymentIntents->create([
+        $payload = [
             'amount' => $this->amount(),
             'currency' => $this->basketManager->currency(),
             'capture_method' => 'manual',
@@ -82,7 +82,28 @@ class StripeGateway implements PaymentGateway
             'automatic_payment_methods' => [
                 'enabled' => true,
             ],
-        ]);
+        ];
+
+        // Map customer details onto Stripe's native fields when provided.
+        if ($request->customerEmail) {
+            $payload['receipt_email'] = $request->customerEmail;
+        }
+
+        if ($address = $request->shippingAddress) {
+            $payload['shipping'] = array_filter([
+                'name' => $request->customerName ?? $address->fullName,
+                'phone' => $request->customerPhone ?? $address->phoneNumber,
+                'address' => array_filter([
+                    'line1' => $address->street,
+                    'city' => $address->locality,
+                    'state' => $address->region,
+                    'postal_code' => $address->postalCode,
+                    'country' => $address->countryCode ? substr($address->countryCode, 0, 2) : null,
+                ]),
+            ]);
+        }
+
+        return $this->client->paymentIntents->create($payload);
     }
 
     public function saveBillingPlan(BillingPlan $billingPlan): BillingPlan

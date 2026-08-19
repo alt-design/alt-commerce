@@ -73,7 +73,7 @@ class RecalculateBasketPipelineTest extends TestCase
             calculateLineItemSubtotals: new CalculateLineItemSubtotals(),
             calculateProductCouponDiscounts: new CalculateProductCouponsDiscounts(),
             calculateLineItemTax: new CalculateLineItemTax(new Service()),
-            calculateTaxItems: new CalculateTaxItems(),
+            calculateTaxItems: new CalculateTaxItems(new Service()),
             calculateTotals: new CalculateTotals(),
         );
 
