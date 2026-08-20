@@ -15,10 +15,17 @@ class PaymentContext
 
     }
 
-    public function authToken(string|null $customerId = null)
+    /**
+     * Accepts either a customer id (original signature) or a full
+     * GenerateAuthTokenRequest carrying customer/shipping details for
+     * gateways with native fields.
+     */
+    public function authToken(GenerateAuthTokenRequest|string|null $request = null)
     {
-        return $this->gatewayBroker->currency($this->currency)->gateway()->createPaymentNonceAuthToken(
-            new GenerateAuthTokenRequest(customerId: $customerId)
-        );
+        if (! $request instanceof GenerateAuthTokenRequest) {
+            $request = new GenerateAuthTokenRequest(customerId: $request);
+        }
+
+        return $this->gatewayBroker->currency($this->currency)->gateway()->createPaymentNonceAuthToken($request);
     }
 }
