@@ -5,6 +5,7 @@ namespace AltDesign\AltCommerce\Commerce\Pipeline;
 use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCoupon\ValidateCouponDates;
 use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCoupon\ValidateEligibleProducts;
+use AltDesign\AltCommerce\Commerce\Pipeline\ValidateCoupon\ValidateMinimumSpend;
 use AltDesign\AltCommerce\Contracts\Coupon;
 use AltDesign\AltCommerce\Contracts\Customer;
 use AltDesign\AltCommerce\Exceptions\CouponNotValidException;
@@ -20,6 +21,7 @@ class ValidateCouponPipeline
     public function __construct(
        ValidateCouponDates $validateCouponDates,
        ValidateEligibleProducts $validateEligibleProducts,
+       ValidateMinimumSpend $validateMinimumSpend,
     )
     {
         self::register(...func_get_args());

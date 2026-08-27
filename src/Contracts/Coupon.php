@@ -19,4 +19,9 @@ interface Coupon
 
     public function isPercentage(): bool;
 
+    /**
+     * Minimum basket spend in minor units. Zero means no minimum.
+     */
+    public function minimumSpend(): int;
+
 }

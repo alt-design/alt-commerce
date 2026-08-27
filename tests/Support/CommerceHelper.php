@@ -77,7 +77,7 @@ trait CommerceHelper
         return $product;
     }
 
-    protected function createProductCoupon(string $code, string $name, int $discountAmount, bool $isPercentage = false, string $currency = 'GBP', array $eligibleProducts = [])
+    protected function createProductCoupon(string $code, string $name, int $discountAmount, bool $isPercentage = false, string $currency = 'GBP', array $eligibleProducts = [], int $minimumSpend = 0)
     {
         $coupon = Mockery::mock(ProductCoupon::class);
         $coupon->allows()->code()->andReturn($code);
@@ -85,6 +85,7 @@ trait CommerceHelper
         $coupon->allows()->discountAmount()->andReturn($discountAmount);
         $coupon->allows()->isPercentage()->andReturn($isPercentage);
         $coupon->allows()->currency()->andReturn($currency);
+        $coupon->allows()->minimumSpend()->andReturn($minimumSpend);
         $coupon->allows('isProductEligible')
             ->andReturnUsing(
                 fn($productId) => in_array($productId, $eligibleProducts)
