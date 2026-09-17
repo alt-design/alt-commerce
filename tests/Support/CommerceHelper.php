@@ -70,6 +70,7 @@ trait CommerceHelper
         $product->allows()->data()->andReturn([])->byDefault();
         $product->allows()->name()->andReturn($name ?? 'Test Product')->byDefault();
         $product->allows()->stockPolicy()->andReturn($stockPolicy)->byDefault();
+        $product->allows()->purchasable()->andReturn(true)->byDefault();
         if ($priceSchema) {
             $product->allows()->price()->andReturn($priceSchema)->byDefault();
         }

@@ -90,6 +90,45 @@ class AddToBasketActionTest extends TestCase
         $this->action->handle(productId: 'invalid-product-id', quantity: 2);
     }
 
+    public function test_throws_exception_if_product_is_not_purchasable()
+    {
+        $this->expectException(ProductNotFoundException::class);
+
+        $unpublished = $this->createProduct(
+            id: 'unpublished-product-id',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'USD'),
+                ])
+            )
+        );
+        $unpublished->allows()->purchasable()->andReturn(false);
+        $this->productRepository->allows()->find('unpublished-product-id')->andReturn($unpublished);
+
+        $this->action->handle(productId: 'unpublished-product-id', quantity: 1);
+    }
+
+    public function test_does_not_add_an_unpurchasable_product_to_the_basket()
+    {
+        $unpublished = $this->createProduct(
+            id: 'unpublished-product-id',
+            priceSchema: new FixedPriceSchema(
+                prices: new PriceCollection([
+                    new Money(100, 'USD'),
+                ])
+            )
+        );
+        $unpublished->allows()->purchasable()->andReturn(false);
+        $this->productRepository->allows()->find('unpublished-product-id')->andReturn($unpublished);
+
+        try {
+            $this->action->handle(productId: 'unpublished-product-id', quantity: 1);
+        } catch (ProductNotFoundException) {
+        }
+
+        $this->assertCount(0, $this->basket->lineItems);
+    }
+
     public function test_throws_exception_if_product_does_not_have_supported_currency()
     {
         $this->expectException(CurrencyNotSupportedException::class);

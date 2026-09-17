@@ -18,6 +18,12 @@ interface Product
     public function stockPolicy(): StockPolicy;
 
     /**
+     * Whether this product may be bought at all. Separate from stock: an
+     * unpublished or withdrawn product is not purchasable at any quantity.
+     */
+    public function purchasable(): bool;
+
+    /**
      * @return TaxRule[]
      */
     public function taxRules(): array;

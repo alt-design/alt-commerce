@@ -54,6 +54,12 @@ class AddToBasketAction
             throw new ProductNotFoundException($productId);
         }
 
+        // Deliberately the same failure as a missing product: whether an
+        // unpublished product exists is not something a caller should learn.
+        if (!$product->purchasable()) {
+            throw new ProductNotFoundException($productId);
+        }
+
         if (!$product->price()->isCurrencySupported($basket->currency)) {
             throw new CurrencyNotSupportedException();
         }

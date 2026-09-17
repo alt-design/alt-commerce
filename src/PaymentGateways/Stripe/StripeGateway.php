@@ -37,6 +37,8 @@ class StripeGateway implements PaymentGateway
 
     public function processOrder(ProcessOrderRequest $request): Order
     {
+        $this->guardAgainstMismatchedPaymentIntent($request);
+
         $paymentIntent = $this->client->paymentIntents->capture($request->gatewayPaymentNonce);
 
         $transactionAmount = in_array($paymentIntent->currency, self::ZERO_DECIMAL_CURRENCIES) ?
@@ -70,6 +72,37 @@ class StripeGateway implements PaymentGateway
         }
 
         return $request->order;
+    }
+
+    /**
+     * The nonce names an intent created earlier in the checkout and arrives
+     * from the caller, so it is checked against the order before any money
+     * moves. Without this, an intent raised for a cheaper basket captures
+     * happily against an expensive order.
+     *
+     * @throws PaymentFailedException
+     */
+    protected function guardAgainstMismatchedPaymentIntent(ProcessOrderRequest $request): void
+    {
+        $paymentIntent = $this->client->paymentIntents->retrieve($request->gatewayPaymentNonce);
+
+        if (strtolower($paymentIntent->currency) !== strtolower($request->order->currency)) {
+            throw new PaymentFailedException('Payment currency does not match the order');
+        }
+
+        if ($paymentIntent->amount !== $this->orderAmount($request->order)) {
+            throw new PaymentFailedException('Payment amount does not match the order total');
+        }
+    }
+
+    /**
+     * The order total in the units Stripe expects, mirroring amount().
+     */
+    protected function orderAmount(Order $order): int
+    {
+        return in_array($order->currency, self::ZERO_DECIMAL_CURRENCIES) ?
+            intdiv($order->total, 100) :
+            $order->total;
     }
 
     public function createPaymentNonceAuthToken(GenerateAuthTokenRequest $request): PaymentIntent
