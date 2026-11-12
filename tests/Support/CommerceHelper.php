@@ -6,12 +6,17 @@ use AltDesign\AltCommerce\Commerce\Basket\Basket;
 use AltDesign\AltCommerce\Commerce\Basket\BasketContext;
 use AltDesign\AltCommerce\Commerce\Basket\BillingItem;
 use AltDesign\AltCommerce\Commerce\Basket\LineItem;
+use AltDesign\AltCommerce\Commerce\Order\Order;
+use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Contracts\BasketRepository;
 use AltDesign\AltCommerce\Contracts\PricingSchema;
 use AltDesign\AltCommerce\Contracts\Product;
 use AltDesign\AltCommerce\Contracts\ProductCoupon;
 use AltDesign\AltCommerce\Contracts\Settings;
+use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\StockPolicy;
+use AltDesign\AltCommerce\Enum\TransactionStatus;
+use AltDesign\AltCommerce\Enum\TransactionType;
 use Mockery;
 use Ramsey\Uuid\Uuid;
 
@@ -140,5 +145,27 @@ trait CommerceHelper
         $this->settings->allows()->defaultCurrency()->andReturn($defaultCurrency)->byDefault();
         $this->settings->allows()->supportedCurrencies()->andReturn($supportedCurrencies)->byDefault();
         $this->settings->allows()->pricesInclusive()->andReturn(false)->byDefault();
+    }
+
+    /**
+     * @param array<int, TransactionStatus> $transactionStatuses
+     */
+    protected function makeOrder(OrderStatus $status = OrderStatus::DRAFT, array $transactionStatuses = []): Order
+    {
+        $order = Mockery::mock(Order::class)->makePartial();
+        $order->id = 'order-1';
+        $order->orderNumber = 'ORD-1';
+        $order->currency = 'GBP';
+        $order->status = $status;
+        $order->transactions = array_map(fn (TransactionStatus $transactionStatus) => new Transaction(
+            id: Uuid::uuid4()->toString(),
+            type: TransactionType::SALE,
+            status: $transactionStatus,
+            currency: 'GBP',
+            amount: 1000,
+            createdAt: new \DateTimeImmutable(),
+        ), $transactionStatuses);
+
+        return $order;
     }
 }

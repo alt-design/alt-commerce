@@ -6,6 +6,7 @@ use AltDesign\AltCommerce\Commerce\Order\Order;
 use AltDesign\AltCommerce\Commerce\Payment\GatewayBroker;
 use AltDesign\AltCommerce\Commerce\Payment\ProcessOrderRequest;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
+use AltDesign\AltCommerce\Exceptions\OrderAlreadyPlacedException;
 
 class AttemptPaymentAction
 {
@@ -18,8 +19,15 @@ class AttemptPaymentAction
 
     }
 
+    /**
+     * @throws OrderAlreadyPlacedException
+     */
     public function handle(Order $order, string $paymentNonce): void
     {
+        if (! $order->isUnpaidDraft()) {
+            throw new OrderAlreadyPlacedException("Order {$order->orderNumber} has already been placed or paid");
+        }
+
         try {
             $config = $this->gatewayBroker->currency($order->currency);
             $gateway = $config->gateway();

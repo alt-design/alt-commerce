@@ -10,10 +10,14 @@ use AltDesign\AltCommerce\Contracts\OrderFactory;
 use AltDesign\AltCommerce\Contracts\OrderRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\StockRepository;
+use AltDesign\AltCommerce\Enum\OrderStatus;
 use AltDesign\AltCommerce\Enum\StockPolicy;
+use AltDesign\AltCommerce\Enum\TransactionStatus;
+use AltDesign\AltCommerce\Exceptions\OrderAlreadyPlacedException;
 use AltDesign\AltCommerce\Tests\Support\CommerceHelper;
 use AltDesign\AltCommerce\Tests\Unit\TestCase;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CreateOrderActionTest extends TestCase
 {
@@ -44,7 +48,7 @@ class CreateOrderActionTest extends TestCase
             new LineItem(id: 'l3', productId: 'untracked', productName: 'Untracked', amount: 100, quantity: 4),
         ];
 
-        $this->orderRepository->allows()->findByBasketId('test-basket')->andReturn(null);
+        $this->orderRepository->allows()->findByBasketId('test-basket')->andReturn(null)->byDefault();
         $this->orderRepository->allows()->reserveOrderNumber()->andReturn('ORD-1');
         $this->orderRepository->allows('save');
         $this->orderFactory->allows('createFromBasket')->andReturn($this->order);
@@ -74,6 +78,50 @@ class CreateOrderActionTest extends TestCase
         $order = $this->action->handle(customer: Mockery::mock(Customer::class));
 
         $this->assertSame($this->order, $order);
+    }
+
+    /**
+     * @return array<string, array{OrderStatus, array<int, TransactionStatus>}>
+     */
+    public static function placedOrPaidOrders(): array
+    {
+        return [
+            'draft with a settled payment' => [OrderStatus::DRAFT, [TransactionStatus::SETTLED]],
+            'draft with a payment in flight' => [OrderStatus::DRAFT, [TransactionStatus::FAILED, TransactionStatus::PENDING]],
+            'processing' => [OrderStatus::PROCESSING, []],
+            'pending' => [OrderStatus::PENDING, []],
+        ];
+    }
+
+    /**
+     * @param array<int, TransactionStatus> $transactionStatuses
+     */
+    #[DataProvider('placedOrPaidOrders')]
+    public function test_refuses_to_rebuild_an_order_that_has_been_placed_or_paid(OrderStatus $status, array $transactionStatuses): void
+    {
+        $this->orderRepository->allows()->findByBasketId('test-basket')->andReturn($this->makeOrder($status, $transactionStatuses));
+
+        try {
+            $this->action->handle(customer: Mockery::mock(Customer::class));
+            $this->fail('Expected the order to be refused');
+        } catch (OrderAlreadyPlacedException $exception) {
+            $this->assertStringContainsString('ORD-1', $exception->getMessage());
+        }
+
+        $this->orderFactory->shouldNotHaveReceived('createFromBasket');
+        $this->orderRepository->shouldNotHaveReceived('save');
+        $this->stockRepository->shouldNotHaveReceived('adjust');
+    }
+
+    public function test_rebuilds_a_draft_whose_payment_attempts_all_failed(): void
+    {
+        $this->orderRepository->allows()->findByBasketId('test-basket')->andReturn($this->makeOrder(OrderStatus::DRAFT, [TransactionStatus::FAILED]));
+        $this->stockRepository->allows()->hasMovementsForReference('order-1')->andReturn(true);
+
+        $order = $this->action->handle(customer: Mockery::mock(Customer::class));
+
+        $this->assertSame($this->order, $order);
+        $this->orderRepository->shouldHaveReceived('save')->once();
     }
 
     public function test_stock_reduction_is_idempotent_when_movements_already_exist(): void
