@@ -157,6 +157,7 @@ trait CommerceHelper
         $order->orderNumber = 'ORD-1';
         $order->currency = 'GBP';
         $order->status = $status;
+        $order->total = 1000;
         $order->transactions = array_map(fn (TransactionStatus $transactionStatus) => new Transaction(
             id: Uuid::uuid4()->toString(),
             type: TransactionType::SALE,

@@ -12,8 +12,11 @@ use AltDesign\AltCommerce\Contracts\PaymentGateway;
 use AltDesign\AltCommerce\Enum\TransactionStatus;
 use AltDesign\AltCommerce\Enum\TransactionType;
 use AltDesign\AltCommerce\Exceptions\PaymentFailedException;
-use AltDesign\AltCommerce\Exceptions\PaymentGatewayException;
+use AltDesign\AltCommerce\Exceptions\PaymentOutcomeUnknownException;
 use Ramsey\Uuid\Uuid;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\ExceptionInterface;
+use Stripe\Exception\IdempotencyException;
 use Stripe\PaymentIntent;
 use Stripe\StripeClient;
 
@@ -39,7 +42,7 @@ class StripeGateway implements PaymentGateway
     {
         $this->guardAgainstMismatchedPaymentIntent($request);
 
-        $paymentIntent = $this->client->paymentIntents->capture($request->gatewayPaymentNonce);
+        $paymentIntent = $this->capture($request->gatewayPaymentNonce);
 
         $transactionAmount = in_array($paymentIntent->currency, self::ZERO_DECIMAL_CURRENCIES) ?
             $paymentIntent->amount * 100 :
@@ -56,7 +59,7 @@ class StripeGateway implements PaymentGateway
                 'requires_capture' => TransactionStatus::PENDING,
                 'canceled' => TransactionStatus::FAILED,
                 'succeeded' => TransactionStatus::SETTLED,
-                default => throw new PaymentGatewayException("Unexpected Stripe payment intent status: {$paymentIntent->status}"),
+                default => throw new PaymentOutcomeUnknownException("Unexpected Stripe payment intent status: {$paymentIntent->status}"),
             },
             currency: $paymentIntent->currency,
             amount: $transactionAmount,
@@ -93,6 +96,61 @@ class StripeGateway implements PaymentGateway
         if ($paymentIntent->amount !== $this->orderAmount($request->order)) {
             throw new PaymentFailedException('Payment amount does not match the order total');
         }
+
+        if ($paymentIntent->status === PaymentIntent::STATUS_SUCCEEDED) {
+            throw new PaymentFailedException('Payment has already been captured');
+        }
+    }
+
+    /**
+     * Stripe can take the money and its answer still not arrive, so anything
+     * short of a rejection is checked before it is reported.
+     *
+     * @throws ApiErrorException
+     * @throws PaymentOutcomeUnknownException
+     */
+    protected function capture(string $paymentIntentId): PaymentIntent
+    {
+        try {
+            return $this->client->paymentIntents->capture($paymentIntentId);
+        } catch (ExceptionInterface $exception) {
+            if ($this->isRejection($exception)) {
+                throw $exception;
+            }
+
+            return $this->confirmCaptured($paymentIntentId, $exception);
+        }
+    }
+
+    protected function isRejection(ExceptionInterface $exception): bool
+    {
+        if (! $exception instanceof ApiErrorException) {
+            return false;
+        }
+
+        if ($exception instanceof IdempotencyException) {
+            return false;
+        }
+
+        return intdiv((int) $exception->getHttpStatus(), 100) === 4;
+    }
+
+    /**
+     * @throws PaymentOutcomeUnknownException
+     */
+    protected function confirmCaptured(string $paymentIntentId, ExceptionInterface $captureError): PaymentIntent
+    {
+        try {
+            $paymentIntent = $this->client->paymentIntents->retrieve($paymentIntentId);
+        } catch (ExceptionInterface) {
+            $paymentIntent = null;
+        }
+
+        if ($paymentIntent?->status !== PaymentIntent::STATUS_SUCCEEDED) {
+            throw new PaymentOutcomeUnknownException("Stripe did not confirm whether {$paymentIntentId} was captured", previous: $captureError);
+        }
+
+        return $paymentIntent;
     }
 
     /**
