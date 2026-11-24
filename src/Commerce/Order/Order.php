@@ -12,6 +12,7 @@ use AltDesign\AltCommerce\Commerce\Billing\Subscription;
 use AltDesign\AltCommerce\Commerce\Customer\Address;
 use AltDesign\AltCommerce\Commerce\Payment\Transaction;
 use AltDesign\AltCommerce\Enum\OrderStatus;
+use AltDesign\AltCommerce\Enum\TransactionStatus;
 use DateTimeImmutable;
 
 abstract class Order
@@ -59,5 +60,15 @@ abstract class Order
     )
     {
 
+    }
+
+    /**
+     * Whether the order can still be rebuilt and charged: it is a draft and no
+     * payment against it has settled or is still in flight.
+     */
+    public function isUnpaidDraft(): bool
+    {
+        return $this->status === OrderStatus::DRAFT
+            && array_filter($this->transactions, fn (Transaction $transaction) => $transaction->status !== TransactionStatus::FAILED) === [];
     }
 }

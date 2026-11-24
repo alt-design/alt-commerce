@@ -11,6 +11,7 @@ use AltDesign\AltCommerce\Contracts\OrderRepository;
 use AltDesign\AltCommerce\Contracts\ProductRepository;
 use AltDesign\AltCommerce\Contracts\StockRepository;
 use AltDesign\AltCommerce\Enum\StockPolicy;
+use AltDesign\AltCommerce\Exceptions\OrderAlreadyPlacedException;
 
 class CreateOrderAction
 {
@@ -24,6 +25,8 @@ class CreateOrderAction
 
     /**
      * @param  array<string, mixed>  $additional
+     *
+     * @throws OrderAlreadyPlacedException
      */
     public function handle(
         Customer $customer,
@@ -35,6 +38,10 @@ class CreateOrderAction
         $basket = $this->context->current();
 
         $order = $this->orderRepository->findByBasketId($basket->id);
+
+        if ($order && ! $order->isUnpaidDraft()) {
+            throw new OrderAlreadyPlacedException("Order {$order->orderNumber} has already been placed or paid for this basket");
+        }
 
         $orderId = $order?->id;
         $orderNumber = $order ? $order->orderNumber : $this->orderRepository->reserveOrderNumber();
