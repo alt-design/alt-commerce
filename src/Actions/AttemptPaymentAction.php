@@ -59,7 +59,11 @@ class AttemptPaymentAction
             throw $exception;
         }
 
-        $this->removeAttempt($order, $attempt);
+        try {
+            $this->removeAttempt($order, $attempt);
+        } catch (Throwable $exception) {
+            throw new PaymentOutcomeUnknownException("The payment for order {$order->orderNumber} could not be recorded", previous: $exception);
+        }
     }
 
     protected function recordAttempt(Order $order, string $gatewayName, string $paymentNonce): Transaction

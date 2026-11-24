@@ -142,7 +142,7 @@ class AttemptPaymentActionTest extends TestCase
         $this->attemptPayment($order, fn (ProcessOrderRequest $request) => $this->settle($request));
     }
 
-    public function test_the_attempt_stays_on_record_when_saving_the_payment_fails(): void
+    public function test_the_outcome_is_unknown_and_the_attempt_stays_on_record_when_saving_the_payment_fails(): void
     {
         $order = $this->makeOrder();
 
@@ -153,8 +153,8 @@ class AttemptPaymentActionTest extends TestCase
                 return $this->settle($request);
             });
             $this->fail('The failure was not passed on');
-        } catch (RuntimeException $exception) {
-            $this->assertSame('Disk full', $exception->getMessage());
+        } catch (PaymentOutcomeUnknownException $exception) {
+            $this->assertSame('Disk full', $exception->getPrevious()?->getMessage());
         }
 
         $this->assertCount(1, $this->savedTransactions);
