@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/). Before 1.0, a minor version can include breaking changes.
 
+## [Unreleased]
+
+### Fixed
+
+- The readme's payment example, which called a method that is not static, and the coupon contracts missing from its table.
+
 ## [0.2.1] - 2026-11-25
 
 ### Added

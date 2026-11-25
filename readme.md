@@ -28,7 +28,7 @@ Each one is in `AltDesign\AltCommerce\Contracts`.
 | `Customer`, `CustomerRepository` | Who is buying |
 | `OrderRepository`, `OrderFactory` | Saving and loading orders |
 | `StockRepository` | Counted stock and its history |
-| `CouponRepository` | Discount codes |
+| `Coupon`, `ProductCoupon`, `CouponRepository` | Discount codes, and the products they apply to |
 | `BasketDriver`, `BasketDriverFactory` | Where a basket is kept between requests |
 | `VisitorLocator` | The visitor's country and currency. Return `null` to use your settings |
 | `Resolver` | Builds classes, usually from your container |
@@ -37,9 +37,15 @@ Each one is in `AltDesign\AltCommerce\Contracts`.
 
 Stripe is the supported gateway. It uses a payment intent with manual capture, so the card is authorised first and charged once the order exists.
 
-1. Create the payment with `PaymentManager::currency('GBP')->authToken()` and confirm it in the browser with Stripe.js.
-2. Create the order with `createOrder()` on the basket context.
-3. Charge it with `attemptPayment()`, passing the payment intent's ID.
+In this example `$payments` is a `PaymentManager` and `$baskets` is a `BasketManager`. Confirm the payment in the browser with Stripe.js before you charge it.
+
+``` php
+$payment = $payments->currency('GBP')->authToken();
+
+$order = $baskets->context('default')->createOrder(customer: $customer);
+
+$baskets->context('default')->attemptPayment($order, $payment->id);
+```
 
 The amount and currency of the payment are checked against the order before any money is taken.
 
@@ -59,12 +65,32 @@ Nothing is sent to Alt Design. Payment requests go to Stripe with the basket's t
 ## Testing
 
 ``` bash
-vendor/bin/phpunit tests
-vendor/bin/phpstan analyse --memory-limit 512m
+composer install
+./vendor/bin/phpunit
+./vendor/bin/phpstan analyse --memory-limit 512m
 ```
 
-## Changelog and licence
+Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
-Changes are listed in [CHANGELOG.md](CHANGELOG.md). Alt Commerce is open source under the [MIT licence](LICENSE).
+## Questions etc
 
-For help, email support@alt-design.net or [open an issue](https://github.com/alt-design/alt-commerce/issues).
+Drop us a big shout-out if you have any questions, comments, or concerns. We're always looking to improve our packages, so if you have any feature requests, we'd love to hear them.
+
+Bug reports and support requests go to [GitHub issues](https://github.com/alt-design/alt-commerce/issues), or email support@alt-design.net.
+
+### Addons
+- [Alt Commerce Addon](https://github.com/alt-design/alt-commerce-statamic)
+
+## Licence
+
+MIT, copyright Alt Design Ltd. See [LICENSE](LICENSE).
+
+## Postcardware
+
+Send us a postcard from your hometown if you like this package. We love getting mail from other cool peeps!
+
+Alt Design  
+St Helens House  
+Derby  
+DE1 3EE  
+UK
