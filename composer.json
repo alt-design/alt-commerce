@@ -1,12 +1,23 @@
 {
     "name": "alt-design/alt-commerce",
+    "description": "Ecommerce core for PHP with baskets, tax, coupons, orders, stock and Stripe payments. Not tied to a framework.",
+    "license": "MIT",
+    "keywords": [
+        "ecommerce",
+        "basket",
+        "checkout",
+        "orders",
+        "stripe"
+    ],
     "authors": [
         {
-            "name": "Alt Design"
+            "name": "Alt Design",
+            "homepage": "https://alt-design.net"
         }
     ],
     "support": {
-        "email": "support@alt-design.net"
+        "email": "support@alt-design.net",
+        "issues": "https://github.com/alt-design/alt-commerce/issues"
     },
     "require": {
         "php": "^8.3",
